@@ -1,0 +1,24 @@
+Package: nasaprograminsights
+Type: Package
+Title: Generate Progrm Insights from Public and Internal Data 
+Version: 0.1.0
+Authors@R: 
+  c(person(given = "Jessica",
+           family = "Burnett",
+           role = c("aut", "cre"),
+           email = "jessica.burnett@nasa.gov",
+           comment = c(ORCID = "0000-0002-0896-5099")),
+    person(given = "Anand",
+           family = "Krishnan",
+           role = "aut",
+           comment = c(ORCID = "0009-0007-5407-2009"))
+Maintainer: The package maintainer <jessica.burnett@nasa.gov>
+Description: TBA. More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: CC0
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    devtools,
+    ggplot2,
+    here
