@@ -1,7 +1,8 @@
+# munge.nspires.internal.peopledata ---------------------------------------
 #' @name munge.nspires.internal.peopledata
 #' @description returns an object of class data.frame
+#' @title Munge NSPIRES Internal People Data
 #' @param df Data from the internal-access-only NSPIRES. Currently this function only really supports the "people" worksheets.
-
 munge.nspires.internal.peopledata <- function(df){
       # df <- people ## for dev purposes
       df <- as.data.frame(df)
@@ -19,14 +20,10 @@ munge.nspires.internal.peopledata <- function(df){
 
 
 # munge.nspires.internal.propsdata ----------------------------------------
-
-
 #' @name munge.nspires.internal.propsdata
+#' @title Munge NSPIRES Internal Proposal Data
 #' @description returns an object of class data.frame
 #' @param df Data from the internal-access-only NSPIRES. Currently this function only really supports the "propals" worksheets.
-#'
-#'
-
 munge.nspires.internal.propsdata <- function(df) {
   # df=props # for dev
   df <- as.data.frame(df)
