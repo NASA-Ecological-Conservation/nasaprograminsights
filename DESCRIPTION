@@ -1,6 +1,6 @@
 Package: nasaprograminsights
 Type: Package
-Title: Generate Progrm Insights from Public and Internal Data 
+Title: Enabling NASA Program Managers to Generate Insights from NSPIRES Data 
 Version: 0.1.0
 Authors@R: 
   c(person(given = "Jessica",
@@ -11,7 +11,9 @@ Authors@R:
     person(given = "Anand",
            family = "Krishnan",
            role = "aut",
+           email = "anand.krishnan@nasa.gov",
            comment = c(ORCID = "0009-0007-5407-2009"))
+           )
 Maintainer: The package maintainer <jessica.burnett@nasa.gov>
 Description: TBA. More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
@@ -24,4 +26,8 @@ Imports:
     here
 Depends: 
     R (>= 2.10)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
