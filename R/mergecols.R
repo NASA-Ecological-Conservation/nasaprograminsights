@@ -1,4 +1,8 @@
-## thos helper function attempts to de-duplicate columns by coalescing those with same names
+#' @name deduplicate
+#' @title Attempt to Deduplicate NSPIRES Data
+#' @description tba
+#' @param dat a dataset///tba
+#' @export
 
 deduplicate <- function(dat){
   if(!any(duplicated(colnames(dat)))){

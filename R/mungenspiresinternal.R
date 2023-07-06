@@ -1,9 +1,12 @@
-# munge.nspires.internal.peopledata ---------------------------------------
-#' @name munge.nspires.internal.peopledata
 #' @description returns an object of class data.frame
-#' @title Munge NSPIRES Internal People Data
+#' @title Munge NSPIRES Internal Data
 #' @param df Data from the internal-access-only NSPIRES. Currently this function only really supports the "people" worksheets.
-munge.nspires.internal.peopledata <- function(df){
+#' @param source one of c('people', 'proposals').
+#' @export munge.nspires.internal.peopledata
+mungeinternalnspires <- function(df, source=NULL){
+
+if(!tolower(source) %in% c("people", "proposals")){stop("Parameter `source` must be one of c('people', 'proposals').")}
+dataout <- if(tolower(source)=="people"){
       # df <- people ## for dev purposes
       df <- as.data.frame(df)
         # for some reason the "committed" date doesnt parse, no clue why because even the clearly "dmy" fields wont parse. whatever. drop the POS
@@ -16,15 +19,9 @@ munge.nspires.internal.peopledata <- function(df){
       # in people data, prop number =="Response Number"
       colnames(df)[which(tolower(colnames(df))=="response number")] <- "Proposal Number"
 
-}
+}# End people data munge
+dataout <- if(tolower(source)=="proposals"){
 
-
-# munge.nspires.internal.propsdata ----------------------------------------
-#' @name munge.nspires.internal.propsdata
-#' @title Munge NSPIRES Internal Proposal Data
-#' @description returns an object of class data.frame
-#' @param df Data from the internal-access-only NSPIRES. Currently this function only really supports the "propals" worksheets.
-munge.nspires.internal.propsdata <- function(df) {
   # df=props # for dev
   df <- as.data.frame(df)
 
@@ -39,9 +36,9 @@ munge.nspires.internal.propsdata <- function(df) {
       )
     )
 
-df <- deduplicate(df)
+df <- nasaprograminsights::deduplicate(df)
 
-##### ADD UNCTION RUN HERE this adds a lot of redundancy
+##### ADD FUNCTION RUN HERE this adds a lot of redundancy
   # View(as.data.frame(sort(colnames(df))))
   ## fix some one-off minor bullshit export controlled
   colnames(df) <- gsub(x=colnames(df), pattern="\n", ignore.case=TRUE, replacement= "")
@@ -101,10 +98,14 @@ df <- deduplicate(df)
   }
 
 df <- deduplicate(df)
-# View(as.data.frame(sort(colnames(df), decreasing = TRUE)))
 
+print("Returning a heavily-munged ", source, "dataset.")
 return(df)
 
-} # END FUN
+
+} # End proposals data munge
+
+
+}# END FUN
 
 
