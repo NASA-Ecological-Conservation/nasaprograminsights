@@ -7,7 +7,6 @@
 #' @keywords data grants
 #' @description Munge multiple files munged from a public-facing source for NASA grant award IDs
 #'
-#'
 NULL
 
 # specify the directory containing data and the nspires imported information
@@ -37,7 +36,6 @@ grantstatusform <- lapply(
   )
 ) |>
   data.table::rbindlist()
-
 
 # munge the date cols
 date_cols <- c("Award Date", "Performance Start Date", "Performance End Date")
