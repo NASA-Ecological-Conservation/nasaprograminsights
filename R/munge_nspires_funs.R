@@ -27,6 +27,7 @@ munge.nspires.people <- function(df){
 
 munge.nspires.proposals <- function(df) {
   df <- as.data.frame(df) 
+  
   ###FIRST: handle the fields named "Question N:". Many of them are the same, but have differnet question numbers. So let's deal with that first.
   colnames(df) <-
     trimws(
@@ -39,7 +40,6 @@ munge.nspires.proposals <- function(df) {
     )
   
 ##### Need to add a helper function here but whatever
-  # View(as.data.frame(sort(colnames(df))))
   ## fix some one-off minor bullshit export controlled
   colnames(df) <- gsub(x=colnames(df), pattern="\n", ignore.case=TRUE, replacement= "")
   colnames(df) <- gsub(x=colnames(df), pattern="territoriesexcluding", ignore.case=TRUE, replacement= "territories excluding")
@@ -66,7 +66,6 @@ munge.nspires.proposals <- function(df) {
     replacement = " ",
     ignore.case = TRUE
   )
-  
   
   ## deal with the "nearly similar" column names...
   old <-
@@ -108,6 +107,13 @@ munge.nspires.proposals <- function(df) {
   df <- deduplicate_rows(df)
   colnames(df) <- tolower(colnames(df))
   
+  ## need to create a unique solicitation identifier
+  ### if prop numbers starts with "{", 
+  #### we will just sacrifice the proposal id number being incorrect for now. 
+  df <- df |>
+    dplyr::mutate("solicitation id" = stringr::str_extract(`proposal number`, "^.*(?=(-))"))  |>
+    dplyr::relocate("solicitation id")
+
 return(df)
 
 } # END FUN

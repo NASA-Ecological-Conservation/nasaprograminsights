@@ -2,9 +2,9 @@
 #' @export
 #' @param dir Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.
 #' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal.
+#' @param keeponlysubmitted logical Default TRUE. If TRUE, this function will output a data frame containing proposals with the following statuses only: c(submitted, declined, selectable, selected, awarded, discouraged, encouraged, invited, uninvited)
 
-
-make_nspires <- function(dir="data-raw/data-raw-internal/nspires-internal", N=200){
+make_nspires <- function(dir="data-raw/data-raw-internal/nspires-internal", N=200, keeponlysubmitted=TRUE){
 # light helper funs...
 not_any_na <- function(x) all(!is.na(x))
 not_all_na <- function(x) any(!is.na(x))
@@ -36,8 +36,25 @@ for(i in 1:round(length(propfns)/N)){
   }
 }
 
-# clean the colnames....ugh so crazy that the fields are so shitty
+# clean the colnames....
 proposals <- munge.nspires.proposals(df=proposals)
+
+if(keeponlysubmitted){
+  proposals <-
+    proposals[which(toupper(proposals$status) %in% toupper(
+      c(
+        "submitted",
+        "declined",
+        "selectable",
+        "selected",
+        "awarded",
+        "discouraged",
+        "encouraged",
+        "invited",
+        "uninvited"
+      )
+    )),]
+} #end keeponlysubmitted
 
 
 # Import and Munge People Data --------------------------------------------
@@ -49,6 +66,7 @@ people <- lapply(pplfns, data.table::fread) |>
 if(!all(people$`pi suid` %in% proposals$`pi suid`))
   warning("FYI. -- not all PI SUIDs from 'people' are in 'proposals'"
   )
+
 
 # Export Data Together to Package as "nspires"  -----------------------------------------------------------
 nspires <- list()

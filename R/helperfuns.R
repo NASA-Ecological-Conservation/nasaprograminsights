@@ -1,4 +1,0 @@
-# SMALL HELPER FUNS
-
-
-
