@@ -28,7 +28,7 @@ for(i in 1:round(length(propfns)/N)){
   if(high > length(propfns))high=length(propfns)
   tempfns <- propfns[low:high]
   # temp[[i]] <- lapply(tempfns, data.table::fread) |> ## fread keeps crashing even when ram use is very low...annoying 
-  temp[[i]] <- lapply(tempfns, read.csv) |> ## fread keeps crashing even when ram use is very low...annoying 
+  temp[[i]] <- lapply(tempfns, read.csv) |> #, fileEncoding = "UTF-16LE") |> ## fread keeps crashing even when ram use is very low...annoying 
     data.table::rbindlist(fill=TRUE)
   if(i == max(round(length(propfns) / N))) {
     proposals <- data.table::rbindlist(temp, fill = TRUE) |> dplyr::select_if(not_all_na)#remove column if all fields == NA
