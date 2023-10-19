@@ -5,7 +5,8 @@
 #' @author Jessica Burnett \email{jessica.burnett@nasa.gov}
 #' @references \url{https://www.nasa.gov/centers/nssc/forms/grant-status-form}
 #' @keywords data grants
-#' @description This datatable contains multiple, hand-corrected and munged files from a public-facing source, Grant Status Form, for NASA grant award IDs. 
+#' @description 
+#' This datatable contains multiple, hand-corrected and munged files from a public-facing source, Grant Status Form, for NASA grant award IDs. 
 #' Unfortunately, this data table is made by downloading Grant Status Form exports one at a time (as of 2023). 
 NULL
 
