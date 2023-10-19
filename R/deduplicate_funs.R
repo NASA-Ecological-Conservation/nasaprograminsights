@@ -20,7 +20,9 @@ deduplicate_cols <- function(dat){
   }
   if(length(colsremove)>0)  dat <- dat[,-colsremove]
 
-if(any(duplicated(colnames(dat))))warning("not all duplications were addressed. run 'any(duplicated(dat))' to check.")
+## deal with the 'status' columns
+  ## force "status" to "proposal status"
+ if(any(duplicated(colnames(dat))))warning("not all duplications were addressed. run 'any(duplicated(dat))' to check.")
 
   return(dat)
 
@@ -34,6 +36,9 @@ if(any(duplicated(colnames(dat))))warning("not all duplications were addressed. 
 #' @param dat a data.frame comprising NSPIRES either proposal_master or people_master files
 #' 
 deduplicate_rows <- function(dat){
-  dat <- dat |> dplyr::distinct(`Proposal Number`, `PI SUID`, .keep_all = TRUE)
+  
+  dat <- dat |> dplyr::distinct(`proposal number`, `pi suid`, .keep_all = TRUE)
+  dat <- dat |> dplyr::group_by(title) |> dplyr::arrange(title, desc(`proposal number`)) |> dplyr::distinct(title, `pi suid` , .keep_all = TRUE)
+
   return(dat)  
 }

@@ -4,7 +4,6 @@
 #' @param df Data from the internal-access-only NSPIRES. Currently this function only really supports the "people" worksheets.
 
 munge.nspires.people <- function(df){
-      # df <- people ## for dev purposes
       df <- as.data.frame(df)
         # for some reason the "committed" date doesnt parse, no clue why because even the clearly "dmy" fields wont parse. whatever. drop the POS
       #   # the fields "PI Last Name and PI First Name" are redundant with the "Member Last and First, bevause they also have their own rows and their roles == PI
@@ -27,6 +26,7 @@ munge.nspires.people <- function(df){
 
 munge.nspires.proposals <- function(df) {
   df <- as.data.frame(df) 
+  
   
   ###FIRST: handle the fields named "Question N:". Many of them are the same, but have differnet question numbers. So let's deal with that first.
   colnames(df) <-
@@ -55,9 +55,6 @@ munge.nspires.proposals <- function(df) {
   colnames(df) <- gsub(x=colnames(df), pattern="Areas of Support", ignore.case=TRUE, replacement= "Area of Support")
   colnames(df) <- gsub(x=colnames(df), pattern=" us ", ignore.case=TRUE, replacement= " U.S. ")
   colnames(df) <- gsub(x=colnames(df), pattern="Total Budget Request", ignore.case=TRUE, replacement= "Total requested")
-
-
-  df <- deduplicate_cols(df)
 
   # deal with periods in colnames (keep this)
   colnames(df) <- gsub(
@@ -103,9 +100,15 @@ munge.nspires.proposals <- function(df) {
     df[,colstoremove] <- list(NULL)
     df[,eval(parse(text="new[i]"))] <- newcol
   }
+  colnames(df) <- tolower(colnames(df))
   df <- deduplicate_cols(df)
   df <- deduplicate_rows(df)
-  colnames(df) <- tolower(colnames(df))
+  
+  # coalease statuses
+  df <- df |> 
+    dplyr::mutate(`proposal status` = dplyr::coalesce(`proposal status`, status)) |> 
+    dplyr::select(-status)
+  
   
   ## need to create a unique solicitation identifier
   ### if prop numbers starts with "{", 

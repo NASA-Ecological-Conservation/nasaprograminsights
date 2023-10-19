@@ -6,7 +6,8 @@ datadir <- "/Users/jlburne3/Library/CloudStorage/OneDrive-NASA/bdecprogrameval/d
 nspires <- make_nspires(dir=datadir)
 
 # Explore proposal data ------------------------------------------------------------
-cols<-c("year", "proposal number", "status", "solicitation number", "proposed total amount")
+cols<-c("year", "proposal number", "status", "solicitation id")
+nspires$proposals$`budget year   1`
 which(cols %in% tolower(names(nspires$proposals)))
 plotdf <- nspires$proposals |> 
   dplyr::select(year, proposal.number, 
