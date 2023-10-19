@@ -1,0 +1,411 @@
+---
+title: "nspires viz"
+author: "Jessica Burnett"
+date: 2022-11-18
+format: html
+editor: visual
+description: Blahlbhlbah. Please open this file in RStudio to render. You must have installed rmarkdown
+---
+
+# About the Project
+
+This notebook aims to serve as a quick summary and visualization tool NASA ROSES solicitations using the (as of 2020-11-18) NSPIRES exported data. This specific document uses solicitations from the Ecological Conservation (formerly Ecological Forecasting) applications area.
+
+```{r}
+#| include: false
+#Rpackages:
+
+list.of.packages <- c("data.table", "dplyr", "ggplot2")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+library(dplyr, quietly=TRUE)
+library(ggplot2, quietly=TRUE)
+```
+
+# Data, Files, Directory Organization
+
+## About the gathering the data from NSPIRES
+
+The data munging process uses **.csv** files as manually exported from the internal NSPIRES solicitations management portal.
+
+The data used in this example were manually exported from internal NSPIRES by JLB.
+
+How I exported data from NSPIRES:
+
+-   [internal NSPIRES login](https://i-nspires.nasaprs.com/internal/index.faces) \> solicitations \> search parameters: show all FY, any other you want \> press "search" to show all visible to you..
+
+    -   note: 'status' == "Past" are closed solicitations with associated \$; 'status'=="Closed" are unsolicited;
+
+-   click on desired solicitation hyperlink under the 'Solicitation' field \> click "Proposals" tab at bottom of page \> click hyperlink for 'Total' number of proposals or NOIs
+
+    -   click 'Show' entries == "All"
+
+    -   click icon for 'Select all' (checkboxes)
+
+-   click 'Export' \> click 'csv' \> choose relevant field in Drop-down menu below \> click 'Export'
+
+    -   save files as e.g., SOLICITATION-NUMBER_proposal_master
+
+    -   note: it takes a hot minute for the export to produce a pop-up menu, especially \>25 proposals/NOIs
+
+## File organization
+
+### Top-level directory
+
+To avoid changing any parameters, consider the top level directory as the directory where this .qmd (or .rmd, or .r) file is saved. Here, save report-generating files (e.g., .qmd).
+
+*Important:* create a file called "solictations_lookup.csv". Use the template here; you can add to it or erase the rows that are irrelevant to you.
+
+#### Data directory
+
+**./data/nspires/:** contains subdirectories 'noi', 'proposals', and 'panels'.
+
+##### Naming conventions within ./data/nspires/
+
+All files within this ./data/nspires/ are manually named because NSPIRES does not export them with any unique identifier (sigh). Therefore, I have applied the following naming convention across all subdirectories within this directory (without the quotation marks/apostrophes and spaces):
+
+> 'SOLICITATION NUMBER'-'ACRONYM' \_ filetype \_ filetype2
+>
+> example: NNH21ZDA001N-ECOF_proposal_master
+
+-   'SOLICITATION NUMBER': the solicitation number as specified in NSPIRES
+
+-   ACRONYM: the acronym as specified in NSPIRES
+
+-   filetype: one of c("panel", "proposal", "noi")
+
+-   filetype2: one of c("master", "aor", "people"
+
+Note: some filenames may end with the phrase "stage1" or "stage2". This occurs when the solicitation comprises opportunities to apply to more than one stage within the same solicitation number.
+
+**./data/nspires/proposals/:** contains files related to the proposal submissions
+
+**./data/nspires/noi/:** contains files related to the Notice of Intent submissions. Unfortunately for some reason the fields in the NOI files that are exported don't have the same headers or fields as the other files. So we are going to ignore the NOIs for this project. This should really be fixed...
+
+**./data/nspires/panels/:** contains files related to the solicitation reviews
+
+# Import Data Relevant to Biological Diversity & Ecological Conservation Programs
+
+Since `r min(props$year, na.rm=TRUE)` the Biological Diversity and Ecological Conservation (formerly, Ecological Forecasting) programs (BDEC) have run `r length(unique(props$solicitation.number))` competitive solicitations (program elements), under which `r length(unique(props$proposal.number))` proposals were awarded totaling `r paste0("~$", round(sum(props$proposed.amount.total, na.rm=TRUE)/1e6),"M")`. Note: this includes only ROSES solicitations managed by the BD or EC program managers and does not, at this time, include augmentations, non-ROSES co-funded awards, or ROSES awards led by other NASA programs to which BDEC have co-sponsored.
+
+```{r dirs-and-files}
+# specify the directory containing data and the nspires imported information
+
+```
+
+Import a hand-curated lookup table for solicitations. This can be used to filter only proposals relevant to this project.
+
+```{r solictation-lookup-table}
+# solicitations lookup table
+flookup <- list.files(dirdata, pattern = "solicitations_lookup",  full.names = TRUE, recursive=TRUE); stopifnot(length(flookup)==1)
+ solslookup <- read.csv(flookup) |> 
+  mutate(total_funds_avail = as.numeric(total_funds_avail)) |> 
+  mutate(annual_funds_avail = as.numeric(annual_funds_avail)) |> 
+  mutate(filescaptured = as.logical(filescaptured)) |> 
+  mutate(acronym = as.factor(acronym)) |> 
+  mutate(solicitation.number = as.factor(solicitation.number)) |> 
+  mutate(max_performance_years = as.integer(max_performance_years))  |> 
+  mutate(num_selected = as.integer(num_selected))  
+  
+# str(solslookup)
+```
+
+\
+
+Next, import the ESD solicitations gathered from ...somewhere?
+
+```{r}
+# this is a very non-machine friendly version and non-intuitive version of the solicitaions that doesnt match  up well with ANYTHING else exported by NSPIRES. 
+##This .xls file was sent by NRESS staff and is simply being used for convenience in the short term for matching up solictations to Woody Turner and Keith Gaddis.
+fn <- list.files(dirdata, pattern="Earth Science Solicitations", full.names=TRUE, recursive=TRUE)  
+# grab all the sheets fkn pita
+sheets <- readxl::excel_sheets(fn)
+# apply sheet names to dataframe names
+wkbk <- lapply(setNames(sheets, sheets),
+               function(x)
+                 readxl::read_excel(
+                   fn,
+                   sheet = x,
+                   skip = 2,
+                   trim_ws = TRUE
+                 ) |>
+                 setNames(
+                   c(
+                     "task",
+                     "appendix",
+                     "dumb",
+                     "pe",
+                     "pm",
+                     "noiduedate",
+                     "propduedate",
+                     "acronym"
+                   )))
+
+# create df
+for(i in seq_along(wkbk)){
+  wkbk[[i]] <- wkbk[[i]][c("appendix", "acronym", "pm","pe")]# I SHOUILDNT HAVE TO DO THISSSSSSSSSS
+  wkbk[[i]]$year <- readr::parse_number(names(wkbk)[i])#goddddd WHY IS THEIR DATA SUCH SHITTT
+  }
+sols <- dplyr::bind_rows(wkbk)
+rm(wkbk)
+bdecsols <- sols |> filter(tolower(pm) %in% c("turner", "gaddis"))
+```
+
+Specify the filenames for the NSPIRES proposal (and people) data that we want to import.
+
+```{r proposal-filenames-to-import}
+# all proposals subdirectory .csv files EXCLUDING NOIs (see above for reason)
+propfiles <- list.files(paste0(ndata,"/proposals"), full.names=TRUE, recursive=TRUE, ".csv")
+## remove the AOR files...we don't care about those i dont think..
+propfiles <- propfiles[setdiff(1:length(propfiles), grep(pattern = "proposal_aor",propfiles))]
+# split filenames into two: people, proposals
+### yes this is messy but whatever for now i can clean later if this is ever used
+pplfns   <- propfiles[grep(pattern="people", x = propfiles)]
+propfns  <- propfiles[setdiff(1:length(propfiles), grep(pattern="people", x = propfiles))]
+rm(propfiles)
+```
+
+Import the NSPIRES data describing the proposals *and* the people within proposals.
+
+```{r import-people-and-proposal-files}
+#| include: false
+## FUNCTIONS APPLICABLE TO BOTH PPL AND PROPS
+fns     <- c("propfns", "pplfns")
+dfnames <- c("props", "ppl")
+
+for(z in 1:2){
+  vec <- eval(as.name(fns[z]))
+  df <-
+    data.table::rbindlist(lapply(vec, read.csv),
+                          use.names = TRUE,
+                          fill =    TRUE)
+  df <-
+      as.data.frame(lapply(df, function(x) {
+        if (is.character(x))
+          toupper(x)
+        else
+          x
+      }))
+    names(df) <- tolower(names(df)) # force names to upper
+    names(df)[which(names(df)=="status")] <- "proposal.status"
+    names(df)[which(names(df)=="response.number")] <- "proposal.number" ## god this is stupid (ppl doesnt match proposals)
+    # ignore the unsubmitted/returned props
+    df <- df[df$proposal.status %in% c("DECLINED", "SELECTED"),]
+    df$year <- as.integer(paste0(20,substr(df$proposal.number, 1, 2)))
+    # make new col for solicitation number...
+    df$solicitation.number <- substr(df$proposal.number,1, (nchar(df$proposal.number[1])-5))
+## note the fkn fields arent named the same across the two types of proposal files (people, master)....
+    ## handle the LOGICAL columns in each data frame
+    for(i in seq_along(df)){
+      if (names(df)[i] == "summary") next() # added by Anand to skip summary col
+      # if(unique(props) ==)
+      if(all(is.na(df[,i]))) next()
+      p <- df[,i]
+      # let's grab unique vals in column and remove any NA, "N/A", "N.A", "NA"
+      p[p %in% c(NA, "NA", "N.A", "N/A")] <- NA #convert all the weird-coded NAs....
+      #handle logicals
+      cond <- all(sort(unique(na.exclude(p))) %in% c("FALSE", "TRUE"))
+      if(cond) df[,i] <- as.logical(p)
+      rm(cond)
+      #handle "dollar" amounts
+      ##if $ is in the col, then replace both teh $ and the space and the ,
+      cond <- any(grepl(pattern="\\$", x = df[,i]))
+      if(cond) df[,i] <- round(as.integer(as.numeric(as.character(gsub(pattern="\\$|,| ", replacement="", x=p)))))
+      rm(cond, p)
+    }
+  #assign("new", old) # rename the object in global env
+  assign(dfnames[z], df)
+  
+  rm(df, i, vec)
+    } # end loop for making data objects
+# quick test to make sure we have all the people...
+if(length(unique(props$proposal.number)) !=ppl$proposal.number |> unique() |> length()) warning("warning, ppl and props unique proposal.numbers are not equal")
+
+# we are now left with two new dfs: props, ppl
+```
+
+Finally, import a data frame that I downloaded from NASA grant status form which contains individual award numbers, but requires heavy filtering on the program officer field.
+
+```{r grants-bdec-lookup}
+##defkeep==a hand-curated list of grants definitely managed by BD/EC
+defkeep <- read.csv(list.files(pattern="grantnumber_lookup", paste0(dirdata, "/data-raw-internal/hand-made-lookups/"), full.names=TRUE))
+stopifnot(length(defkeep)>0)
+# defkeep <- read.csv(list.files(pattern="grantnumber_lookup", recursive = TRUE))
+```
+
+```{r import-grant-status-form-award-numbers}
+data("grantstatusform")
+
+any(grantstatusform$`Grant Number` == "NNX09AU39G")
+# defkeep$grant.number[which(!defkeep$grant.number %in% grantstatusform$`Grant Number`)]
+# 
+# 
+# allgrants <- lapply(X = fns, data.table::fread,
+#          na.strings = c("(N/A)", NA, "N/A", "", NA_character_))
+# 
+# df=bind_rows(allgrants)
+# 
+# for(i in seq_along(allgrants)){
+#   # replace all "(N/A)" 
+#   
+#   allgrants[[i]]$`Award Date` |> str()
+# 
+# } 
+
+# "NNX17AH18A" %in% test$Grant.Number
+
+# allgrants <- list.files(list.files(dirdata, "grantstatusform", full.names=TRUE), full.names=TRUE) |> 
+# lapply(read.csv) %>% 
+#     dplyr::bind_rows()
+# allgrants$Grant.Number %in% defkeep$grant.number |> which() |> length()
+# defkeep$grant.number %in% allgrants$Grant.Number |> which() |> length()
+
+```
+
+```{r whichgrantsmissing}
+(missingfromallgrants <- defkeep$grant.number[which(!defkeep$grant.number %in% allgrants$Grant.Number)])
+# here's the list of grants I cannot find in grantstatusform 
+notingrantstatusform <- c("NNG04GM71G",
+                          "NNG04GE43G",
+                          "NNG04GF13G",
+                          "NNG04GH51G",
+                          "NNG04GI22G",
+                          "NNG04GK26G",
+                          ""
+                          )
+```
+
+```{r keep-relevant-bdec-props}
+kg <- allgrants[toupper(allgrants$Technical.Officer) =="KEITH GADDIS",]
+wt <- allgrants[toupper(allgrants$Technical.Officer) %in% c("WOODY TURNER"),]
+
+tocheck <-
+  dplyr::bind_rows(kg[!kg$Grant.Number %in% defkeep$grant.number, ], wt[!wt$Grant.Number %in% defkeep$grant.number, ]) |> arrange(Grant.Number) |> distinct(Proposal.Title, .keep_all =TRUE)
+# remove the Temuulen Sankey project
+```
+
+# Visualize Data
+
+```{r}
+#| include: false
+# just make a smaller df to toy around with. 
+plotdf <- props |> 
+  dplyr::select(year, proposal.number, 
+                title, summary, proposal.status,solicitation.number,
+                proposed.amount.total, agency.name, other.agency) |> 
+  dplyr::group_by(year, proposal.status) |>
+  dplyr::mutate(ndecisions=dplyr::n_distinct(proposal.number)) |>
+  ungroup() |> 
+  dplyr::group_by(year) |>
+  dplyr::mutate(nsubmissions=dplyr::n_distinct(proposal.number)) |> 
+  ungroup()
+```
+
+```{r visualizeawards}
+temp <- plotdf |>
+  dplyr::filter(!proposed.amount.total %in% c(0, NA)) 
+
+ggplot(
+  temp,
+  aes(y = solicitation.number, x = proposed.amount.total / 1e6, fill = proposal.status)
+) +
+  geom_boxplot() +
+  xlab("Total award requested ($M)") +
+  theme(legend.position = "top")
+
+ggplot(
+  temp,
+  aes(y = solicitation.number, x = log(proposed.amount.total / 1e6), fill = proposal.status)
+) +
+  geom_boxplot() +
+  xlab("Total award requested ($M)") +
+  theme(legend.position = "top")
+```
+
+```{r bar-num-proposals}
+temp <- plotdf |> 
+  filter(!stringr::str_detect(toupper(solicitation.number), "BIOCLI")) |>  ##remove bioclim
+  filter(!stringr::str_detect(toupper(solicitation.number), "EARTH")) |>  ##remove finesst
+  # filter(!stringr::str_detect(toupper(solicitation.number), "A36PHA")) |>  ##remove phase 2
+  filter(!stringr::str_detect(toupper(solicitation.number), "SLSCVC")) |>  ##remove phase 2
+  filter(!stringr::str_detect(toupper(solicitation.number), "ECOST")) |>  ##remove phase 2
+  group_by(solicitation.number, proposal.status) |> 
+  summarise(nprops=n_distinct(proposal.number), year=year, nsubmissions=nsubmissions) |>
+  ungroup() |> 
+  distinct_all() |> 
+  arrange(solicitation.number)
+
+ggplot(data=temp)+
+  geom_col(aes(y=solicitation.number, x=nprops,  fill=proposal.status)) +
+  xlab("number proposals")
+
+```
+
+```{r}
+give.n <- function(x){
+  return(c(y = max(x)*1.05, label = length(x))) 
+  # experiment with the multiplier to find the perfect position
+}
+
+temp2 <- plotdf |> 
+  filter(toupper(proposal.status)=="SELECTED") |> 
+  filter(!stringr::str_detect(toupper(solicitation.number), "BIOCLI")) |>  ##remove bioclim
+  filter(!stringr::str_detect(toupper(solicitation.number), "ECOST")) |>  ##remove ecostress
+  filter(!stringr::str_detect(toupper(solicitation.number), "EARTH")) |>  ##remove finesst
+  filter(!stringr::str_detect(toupper(solicitation.number), "A36PHA")) |>  ##remove phase 2
+  filter(!stringr::str_detect(toupper(solicitation.number), "SLSCVC"))  ##remove phase 2
+
+###distribution of awarded amounts
+ggplot(temp2, aes(x=solicitation.number, y=proposed.amount.total/1e6)) + 
+    geom_boxplot()+
+  # geom_point()
+  ylab("Total award amount ($M)")+
+  xlab("Solicitation")+
+       stat_summary(fun.data = give.n, geom = "text", fun.y = max,
+                  position = position_dodge(width = 0.07))
+
+temp3 <- left_join(temp2, solslookup) |> 
+  mutate(awardpercentoftotal=proposed.amount.total/total_funds_avail) |> 
+  group_by(solicitation.number) |> 
+  mutate(totalpercent=sum(awardpercentoftotal))
+hist(temp3$totalpercent)
+```
+
+```{r bar-num-proposals-accepted}
+temp <- plotdf |> 
+  filter(toupper(proposal.status)=="SELECTED") |> 
+  filter(!stringr::str_detect(toupper(solicitation.number), "BIOCLI")) |>  ##remove bioclim
+  filter(!stringr::str_detect(toupper(solicitation.number), "ECOST")) |>  ##remove ecostress
+  filter(!stringr::str_detect(toupper(solicitation.number), "EARTH")) |>  ##remove finesst
+  filter(!stringr::str_detect(toupper(solicitation.number), "A36PHA")) |>  ##remove phase 2
+  filter(!stringr::str_detect(toupper(solicitation.number), "SLSCVC")) |>  ##remove phase 2
+  group_by(solicitation.number) |> 
+  summarise(nprops=n_distinct(proposal.number), year=year) |>
+  distinct_all() |> 
+  arrange(solicitation.number)
+ggplot(data=temp)+
+  geom_col(aes(x=solicitation.number, y=nprops)) +
+  xlab("number proposals awarded")
+  # geom_col(aes(x=solicitation.number, y=nprops))#, color=solicitation.number))
+
+temp2 <- plotdf |> 
+  filter(toupper(proposal.status)=="SELECTED") |> 
+  filter(!stringr::str_detect(toupper(solicitation.number), "BIOCLI")) |>  ##remove bioclim
+  filter(!stringr::str_detect(toupper(solicitation.number), "ECOST")) |>  ##remove ecostress
+  filter(!stringr::str_detect(toupper(solicitation.number), "EARTH")) |>  ##remove finesst
+  filter(!stringr::str_detect(toupper(solicitation.number), "A36PHA")) |>  ##remove phase 2
+  filter(!stringr::str_detect(toupper(solicitation.number), "SLSCVC"))  ##remove phase 2
+```
+
+## Export data
+
+Save the data. I want to add the grant numbers to this export too (from grantstatusform).
+
+```{r}
+x=props |> 
+  filter(proposal.status=="SELECTED") |> 
+  distinct(year, proposal.number, .keep_all=TRUE)
+fn<-"relevantprops.csv"
+write.csv(x, file=fn)
+browseURL(fn)
+```
