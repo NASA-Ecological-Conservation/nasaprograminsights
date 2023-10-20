@@ -1,11 +1,9 @@
 #' @name solicitationslookup
 #' @description
+#' @docType data
 #' A lookup table for ESD and ASP solicitations to easily index solicitations and proposals according to program name.
 #' 
-#' @docType data
-#'
-#'
-#'
+#' 
 
 fn <- list.files(pattern="asp-solicitation", full.names=TRUE, recursive=TRUE)
 stopifnot(length(fn)>0)
@@ -25,7 +23,7 @@ names(sols_lookup) <- tolower(names(sols_lookup))
 sols_lookup <- sols_lookup |>
   dplyr::rename("proposal number" = 'proposal no')
 
-
+## export to package
 usethis::use_data(sols_lookup)
 
 
