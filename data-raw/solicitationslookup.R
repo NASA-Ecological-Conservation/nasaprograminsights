@@ -1,17 +1,23 @@
 #' @name solicitationslookup
 #' @description
-#' A 
+#' A lookup table for ESD and ASP solicitations to easily index solicitations and proposals according to program name.
 #' 
 #' @docType data
 #' 
 
-flookup <- list.files(pattern = "solicitations_lookup",  full.names = TRUE, recursive=TRUE); stopifnot(length(flookup)==1)
+fn <- list.files("data-raw", pattern="ESD-ASP-solicitations-lookup", full.names=TRUE, recursive=TRUE)
+names <- readxl::excel_sheets(fn)
 
-solslookup <- read.csv(flookup) |> 
-  dplyr::mutate(total_funds_avail = as.numeric(total_funds_avail)) |> 
-  dplyr::mutate(annual_funds_avail = as.numeric(annual_funds_avail)) |> 
-  dplyr::mutate(acronym = as.factor(acronym)) |> 
-  dplyr::mutate(solicitation.number = as.factor(solicitation.number)) |> 
-  dplyr::mutate(max_performance_years = as.integer(max_performance_years))  |> 
-  dplyr::mutate(num_selected = as.integer(num_selected)) 
+for(i in seq_along(names)){
+  temp <- readxl::read_xlsx(fn, sheet = names[i]) |> 
+    dplyr::mutate(`Program Name` = names[i])
+  if(i == 1) lookup <- temp
+  lookup <- dplyr::bind_rows(temp)
+  rm(temp)
+}
+
+# i should munge the colnames....
+
+usethis::use_data(lookup)
+
 
