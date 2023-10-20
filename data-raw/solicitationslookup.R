@@ -5,7 +5,7 @@
 #' @docType data
 #' 
 
-fn <- list.files("data-raw", pattern="ESD-ASP-solicitations-lookup", full.names=TRUE, recursive=TRUE)
+fn <- list.files(path="data-raw", pattern="ESD-ASP-solicitations-lookup", full.names=TRUE, recursive=TRUE)
 names <- readxl::excel_sheets(fn)
 
 for(i in seq_along(names)){
@@ -16,7 +16,12 @@ for(i in seq_along(names)){
   rm(temp)
 }
 
-# i should munge the colnames....
+## munge colnames
+names(lookup) <- tolower(names(lookup))
+
+looku <- lookup |>
+  dplyr::rename("proposal number" = 'proposal no')
+
 
 usethis::use_data(lookup)
 
