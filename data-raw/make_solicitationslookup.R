@@ -21,7 +21,10 @@ for(i in seq_along(names)){
 names(sols_lookup) <- tolower(names(sols_lookup))
 
 sols_lookup <- sols_lookup |>
-  dplyr::rename("solicitation number" = 'nra number')
+  dplyr::rename("solicitation number" = 'nra number') |> 
+  as.data.frame() |> 
+  dplyr::select("solicitation title", "solicitation number", "nra year", "program name")
+
 
 ## export to package
 usethis::use_data(sols_lookup, overwrite=TRUE)

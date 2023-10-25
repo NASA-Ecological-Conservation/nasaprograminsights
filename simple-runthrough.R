@@ -1,13 +1,13 @@
 # Setup -------------------------------------------------------------------
 devtools::install_github(repo="NASA-Ecological-Conservation/nasaprograminsights")
 
-
 # Make df from NSPIRES Internal Data ---------------------------------------------------------------
 datadir <- "/Users/jlburne3/Library/CloudStorage/OneDrive-NASA/bdecprogrameval/data-raw/" # where is the internal data stored
 nspires <- nasaprograminsights::make_nspires(dir=datadir)
-str(nspires)
-
-# comprises 3 data frames: lookup table to link program names and NOFOs; people database; proposals database
+# nspires$lookup = 3 data frames: 
+##    lookup table to link program names and NOFOs
+##    people: 
+##    proposals: 
 
 # Explore proposal data ------------------------------------------------------------
 ### remove anythin with "{" in solicitaiotn id number
