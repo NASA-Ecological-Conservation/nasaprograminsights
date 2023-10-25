@@ -4,13 +4,15 @@ devtools::install_github(repo="NASA-Ecological-Conservation/nasaprograminsights"
 
 # Make df from NSPIRES Internal Data ---------------------------------------------------------------
 datadir <- "/Users/jlburne3/Library/CloudStorage/OneDrive-NASA/bdecprogrameval/data-raw/" # where is the internal data stored
-nspires <- make_nspires(dir=datadir)
+nspires <- nasaprograminsights::make_nspires(dir=datadir)
+str(nspires)
+
+# comprises 3 data frames: lookup table to link program names and NOFOs; people database; proposals database
 
 # Explore proposal data ------------------------------------------------------------
-# I NEED TO MAKE A COLUMN FOR ROSESYEAR or osmething
-#STEPS:
 ### remove anythin with "{" in solicitaiotn id number
 ### create a var for ROSES YEAR
+head(nspires$proposals,2)
 # ...
 plotdf <- nspires$proposals |> 
   dplyr::select(year, proposal.number, 

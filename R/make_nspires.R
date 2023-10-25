@@ -1,7 +1,7 @@
 #' @title Make a list of munged NSPIRES data using local data sources. 
 #' @export
 #' @param dir Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.
-#' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal.
+#' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.
 
 make_nspires <- function(dir="data-raw/data-raw-internal/nspires-internal", N=200){
 # light helper funs...
@@ -56,7 +56,9 @@ nspires <- list()
 nspires$proposals <- proposals
 nspires$people <- people
 
-rm(proposals, people)
+nspires$lookup <- nasaprograminsights::sols_lookup
+
+rm(proposals, people, temp)
 
 return(nspires)
 }
