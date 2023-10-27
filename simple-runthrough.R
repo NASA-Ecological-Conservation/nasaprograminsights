@@ -13,7 +13,7 @@ nspires <- nasaprograminsights::make_nspires(dir=datadir)
 # here is a list of EA programs
 programs <- nspires$lookup$`program name` |> unique()
 # here is a list of the programs for which we have proposal data:
-nspires$proposals$`solicitation id` %in% nspires$lookup$ |> which()
+nspires$proposals$`solicitation id` %in% nspires$lookup$`solciitation id` |> which()
 
 # Subset Data -------------------------------------------------------------
 ## let's build a simple function to return  a reduced data set that can (a) be used for export or table generation purposees and (b) to input quickly into plotting features.
