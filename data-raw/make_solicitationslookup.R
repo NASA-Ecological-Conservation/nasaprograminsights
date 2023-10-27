@@ -33,7 +33,7 @@ sols_lookup <- sols_lookup |>
 prog <- sub(".*\\-", "", x = sols_lookup$`solicitation number`) # exatract portion of new var
 num <- stringr::str_extract(gsub(
   "nnh",
-  x = sols_lookup$`nra number`,
+  x = sols_lookup$`solicitation number`,
   replace = "",
   ignore.case = TRUE
 ), "^\\d{1,2}")
