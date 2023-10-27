@@ -20,12 +20,26 @@ for(i in seq_along(names)){
 ## munge colnames
 names(sols_lookup) <- tolower(names(sols_lookup))
 
+
 sols_lookup <- sols_lookup |>
   dplyr::rename("solicitation number" = 'nra number') |> 
   as.data.frame() |> 
   dplyr::select("solicitation title", "solicitation number", "nra year", "program name")
 
+## the NSPIRES exported data does NOT include the NRA number, so make an id to mesh with the solicitaitons lookup -- anoying
+# we need this because we ned to link programs to proposals
+# this solution is terrible but whatever for now
+# needs to be 21-SERVIR21
+prog <- sub(".*\\-", "", x = sols_lookup$`nra number`) # exatract portion of new var
+num <- stringr::str_extract(gsub(
+  "nnh",
+  x = sols_lookup$`nra number`,
+  replace = "",
+  ignore.case = TRUE
+), "^\\d{1,2}")
+
+sols_lookup$'solciitation id' <- paste0(num, "-", prog, num)
+
 
 ## export to package
 usethis::use_data(sols_lookup, overwrite=TRUE)
-

@@ -35,6 +35,9 @@ for(i in 1:round(length(propfns)/N)){
   }
 }
 
+## deal with special case issues, eventually...:
+# "Decisions/05"
+
 # clean the colnames....
 proposals <- munge.nspires.proposals(df=proposals)
 
@@ -58,7 +61,7 @@ nspires$people <- people
 
 nspires$lookup <- nasaprograminsights::sols_lookup
 
-rm(proposals, people, temp)
+rm(proposals, people)
 
 return(nspires)
 }
