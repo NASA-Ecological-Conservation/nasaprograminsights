@@ -30,7 +30,7 @@ sols_lookup <- sols_lookup |>
 # we need this because we ned to link programs to proposals
 # this solution is terrible but whatever for now
 # needs to be 21-SERVIR21
-prog <- sub(".*\\-", "", x = sols_lookup$`nra number`) # exatract portion of new var
+prog <- sub(".*\\-", "", x = sols_lookup$`solicitation number`) # exatract portion of new var
 num <- stringr::str_extract(gsub(
   "nnh",
   x = sols_lookup$`nra number`,
@@ -39,7 +39,6 @@ num <- stringr::str_extract(gsub(
 ), "^\\d{1,2}")
 
 sols_lookup$'solciitation id' <- paste0(num, "-", prog, num)
-
 
 ## export to package
 usethis::use_data(sols_lookup, overwrite=TRUE)

@@ -55,11 +55,12 @@ if(!all(people$`pi suid` %in% proposals$`pi suid`))
 
 
 # Export Data Together to Package as "nspires"  -----------------------------------------------------------
+
 nspires <- list()
 nspires$proposals <- proposals
 nspires$people <- people
-
 nspires$lookup <- nasaprograminsights::sols_lookup
+
 
 rm(proposals, people)
 
