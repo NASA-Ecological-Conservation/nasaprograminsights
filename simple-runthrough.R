@@ -19,7 +19,6 @@ nspires$proposals$`solicitation id` %in% nspires$lookup$`solciitation id` |> whi
 ## let's build a simple function to return  a reduced data set that can (a) be used for export or table generation purposees and (b) to input quickly into plotting features.
 
 
-
 # Explore proposal data ------------------------------------------------------------
 # head(nspires$proposals, 2)[1:10]
 # head(nspires$people, 2)

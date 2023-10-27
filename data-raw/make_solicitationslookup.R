@@ -31,14 +31,10 @@ sols_lookup <- sols_lookup |>
 # this solution is terrible but whatever for now
 # needs to be 21-SERVIR21
 prog <- sub(".*\\-", "", x = sols_lookup$`solicitation number`) # exatract portion of new var
-num <- stringr::str_extract(gsub(
-  "nnh",
-  x = sols_lookup$`solicitation number`,
-  replace = "",
-  ignore.case = TRUE
-), "^\\d{1,2}")
+# Extract last two digits of yr 
+yr <- substr(sols_lookup$`nra year`, nchar(sols_lookup$`nra year`) - 2 + 1, nchar(sols_lookup$`nra year`))
 
-sols_lookup$'solciitation id' <- paste0(num, "-", prog, num)
+sols_lookup$'solciitation id' <- paste0(yr, "-", prog, yr)
 
 ## export to package
 usethis::use_data(sols_lookup, overwrite=TRUE)
