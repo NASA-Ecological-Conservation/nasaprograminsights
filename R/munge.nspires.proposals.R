@@ -73,6 +73,7 @@ munge.nspires.proposals <- function(df) {
       "Would the proposal involve any activity that includes: a.Construction of new facilities or modification to the footprint of an existing-facility, or b.Ground disturbance (e.g., excavation, clearing of trees, installation of equipment, etc.), or c.Outdoor discharges of water (e.g., waste water runoff), air emissions (e.g., ozone-depleting substances) or generation of noise exceeding 115 dBA (excluding those associated with aircraft operations)",
       "This proposal contains information and/or data that are subject to U.S. export-control laws and regulations including Export Administration Regulations (EAR) and International Traffic in Arms Regulations (ITAR)"
     )
+  
   for(i in seq_along(new)){
     cols <- names(df)[which(grepl(pattern = tolower(old[i]), x=tolower(names(df))))]
     if(length(cols)==0)next()

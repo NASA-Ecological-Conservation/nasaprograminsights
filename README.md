@@ -9,8 +9,8 @@ devtools::install_github(repo="NASA-Ecological-Conservation/nasaprograminsights"
 
 ``` r
 # Make a list of data frames using NSPIRES internal data ---------------------------------------------------------------
-datadir <- "/Users/jlburne3/Library/CloudStorage/OneDrive-NASA/bdecprogrameval/data-raw/" # where is the internal data stored
-nspires <- nasaprograminsights::make_nspires(dir=datadir, removeppl = TRUE, tokeep=c("selected", "declined", "submitted","selectable","invited","awarded"))
+dir <- "/Users/jlburne3/Library/CloudStorage/OneDrive-NASA/bdecprogrameval/nspires-data/" # where is the internal data stored
+nspires <- nasaprograminsights::make_nspires(dir, removeppl = TRUE, tokeep=c("selected", "declined", "submitted","selectable","invited","awarded"))
     # nspires contains 3 elements (data.frames): 
     ##    lookup table to link program names and NOFOs
     ##    people: people listed on proposals

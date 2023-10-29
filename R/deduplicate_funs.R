@@ -38,7 +38,7 @@ deduplicate_cols <- function(dat){
 deduplicate_rows <- function(dat){
   
   dat <- dat |> dplyr::distinct(`proposal number`, `pi suid`, .keep_all = TRUE)
-  dat <- dat |> dplyr::group_by(title) |> dplyr::arrange(title, desc(`proposal number`)) |> dplyr::distinct(title, `pi suid` , .keep_all = TRUE)
+  dat <- dat |> dplyr::group_by(title) |> dplyr::arrange(title, desc(`proposal number`)) |> dplyr::distinct(title, `pi suid` , .keep_all = TRUE) |> dplyr::ungroup()
 
   return(dat)  
 }

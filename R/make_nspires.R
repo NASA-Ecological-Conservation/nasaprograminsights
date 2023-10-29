@@ -5,7 +5,8 @@
 #' @param dir Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.
 #' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.
  
-make_nspires <- function(dir="data-raw/data-raw-internal/nspires-internal", N=200,tokeep=c("selected", "declined", "submitted","selectable","invited","awarded"), removeppl=TRUE){
+make_nspires <- function(dir="nspires-data/data-raw-internal/nspires-internal", N=200,
+                         tokeep=c("selected", "declined", "submitted","selectable","invited","awarded"), removeppl=TRUE){
 # light helper funs...
 not_any_na <- function(x) all(!is.na(x))
 not_all_na <- function(x) any(!is.na(x))
