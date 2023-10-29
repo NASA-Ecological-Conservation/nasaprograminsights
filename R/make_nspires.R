@@ -4,7 +4,7 @@
 #' @param removeppl Logical. Default TRUE will keep ONLY the people who are associated with proposals in the data frame. FALSE will keep all people.
 #' @param dir Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.
 #' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.
-
+ 
 make_nspires <- function(dir="data-raw/data-raw-internal/nspires-internal", N=200,tokeep=c("selected", "declined", "submitted","selectable","invited","awarded"), removeppl=TRUE){
 # light helper funs...
 not_any_na <- function(x) all(!is.na(x))
@@ -61,9 +61,9 @@ if(removeppl){
   people <- people |> dplyr::filter(`proposal number` %in% proposals$`proposal number`)
 }
 
-if(!all(people$`member suid` %in% proposals$`pi suid`))
-  warning("FYI. -- not all PI SUIDs from 'people' are in 'proposals'"
-)
+# if(!all(people$`member suid` %in% proposals$`pi suid`))
+#   warning("FYI. -- not all PI SUIDs from 'people' are in 'proposals'"
+# )
 
 # Export Data Together to Package as "nspires"  -----------------------------------------------------------
 
