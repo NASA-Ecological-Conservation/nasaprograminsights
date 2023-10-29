@@ -3,13 +3,12 @@ devtools::install_github(repo="NASA-Ecological-Conservation/nasaprograminsights"
 
 # Make df from NSPIRES Internal Data ---------------------------------------------------------------
 datadir <- "/Users/jlburne3/Library/CloudStorage/OneDrive-NASA/bdecprogrameval/data-raw/" # where is the internal data stored
-# nspires <- nasaprograminsights::
-nspires <-  make_nspires(dir=datadir, removeppl = TRUE)
+nspires <- nasaprograminsights::make_nspires(dir=datadir, removeppl = TRUE, tokeep=c("selected", "declined", "submitted","selectable","invited","awarded"))
     # nspires contains 3 elements (data.frames): 
     ##    lookup table to link program names and NOFOs
     ##    people: people listed on proposals
     ##    proposals: 
-tokeep=c("selected", "declined", "submitted","selectable","invited","awarded")
+
 nspires$proposals <- nspires$proposals |> dplyr::filter(tolower(`proposal status`) %in% tolower(tokeep))
 
 
