@@ -106,10 +106,16 @@ munge.nspires.proposals <- function(df) {
   
   # coalease statuses
   df <- df |> 
-    dplyr::mutate(`proposal status` = dplyr::coalesce(`proposal status`, status)) |> 
+    dplyr::mutate(`proposal status` = trimws(dplyr::coalesce(`proposal status`, status))) |> 
     dplyr::select(-status)
-  
-  
+  # trim whitespace
+  df$`proposal number` <-
+    gsub(
+      pattern = " ",
+      x = df$`proposal number`,
+      replacement = "",
+      ignore.case = TRUE
+    )
   ## need to create a unique solicitation identifier
   ### if prop numbers starts with "{", 
   #### we will just sacrifice the proposal id number being incorrect for now. 

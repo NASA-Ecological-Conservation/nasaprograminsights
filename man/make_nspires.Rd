@@ -4,12 +4,21 @@
 \alias{make_nspires}
 \title{Make a list of munged NSPIRES data using local data sources.}
 \usage{
-make_nspires(dir = "data-raw/data-raw-internal/nspires-internal", N = 200)
+make_nspires(
+  dir = "data-raw/data-raw-internal/nspires-internal",
+  N = 200,
+  tokeep = c("selected", "declined", "submitted", "selectable", "invited", "awarded"),
+  removeppl = TRUE
+)
 }
 \arguments{
 \item{dir}{Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.}
 
-\item{N}{Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal.}
+\item{N}{Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.}
+
+\item{tokeep}{Character vector. Will keep only the proposals with proposal stus in those listed in the vector. IF NULL, will not remove any proposals.}
+
+\item{removeppl}{Logical. Default TRUE will keep ONLY the people who are associated with proposals in the data frame. FALSE will keep all people.}
 }
 \description{
 Make a list of munged NSPIRES data using local data sources.

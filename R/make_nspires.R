@@ -1,9 +1,11 @@
 #' @title Make a list of munged NSPIRES data using local data sources. 
 #' @export
+#' @param tokeep Character vector. Will keep only the proposals with proposal stus in those listed in the vector. IF NULL, will not remove any proposals.
+#' @param removeppl Logical. Default TRUE will keep ONLY the people who are associated with proposals in the data frame. FALSE will keep all people.
 #' @param dir Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.
 #' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.
 
-make_nspires <- function(dir="data-raw/data-raw-internal/nspires-internal", N=200){
+make_nspires <- function(dir="data-raw/data-raw-internal/nspires-internal", N=200,tokeep=c("selected", "declined", "submitted","selectable","invited","awarded"), removeppl=TRUE){
 # light helper funs...
 not_any_na <- function(x) all(!is.na(x))
 not_all_na <- function(x) any(!is.na(x))
@@ -35,24 +37,33 @@ for(i in 1:round(length(propfns)/N)){
   }
 }
 
-## deal with special case issues, eventually...:
-# "Decisions/05"
-
 # clean the colnames....
 proposals <- munge.nspires.proposals(df=proposals)
 
+## deal with special case issues, eventually...:
+# "Decisions/05"
 
+# If indicated, filter the proposals using tokeep
+if(!is.null(tokeep)){
+ proposals <- proposals |> 
+  dplyr::filter(tolower(`proposal status`) %in% tolower(tokeep))
+}
 
 # Import and Munge People Data --------------------------------------------
 # i should probably move out of data.table
 people <- lapply(pplfns, data.table::fread) |>
   data.table::rbindlist(fill=TRUE) |> 
-  as.data.frame() 
+  as.data.frame() |> 
+  munge.nspires.people()
 
-if(!all(people$`pi suid` %in% proposals$`pi suid`))
+# Resolve argument
+if(removeppl){
+  people <- people |> dplyr::filter(`proposal number` %in% proposals$`proposal number`)
+}
+
+if(!all(people$`member suid` %in% proposals$`pi suid`))
   warning("FYI. -- not all PI SUIDs from 'people' are in 'proposals'"
-  )
-
+)
 
 # Export Data Together to Package as "nspires"  -----------------------------------------------------------
 

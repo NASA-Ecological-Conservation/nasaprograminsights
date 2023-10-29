@@ -26,13 +26,15 @@ sols_lookup <- sols_lookup |>
   as.data.frame() |> 
   dplyr::select("solicitation title", "solicitation number", "nra year", "program name")
 
+
 ## the NSPIRES exported data does NOT include the NRA number, so make an id to mesh with the solicitaitons lookup -- anoying
 # we need this because we ned to link programs to proposals
 # this solution is terrible but whatever for now
 # needs to be 21-SERVIR21
-prog <- sub(".*\\-", "", x = sols_lookup$`solicitation number`) # exatract portion of new var
+prog <- trimws(sub(".*\\-", "", x = sols_lookup$`solicitation number`)) # extract portion of new var
+
 # Extract last two digits of yr 
-yr <- substr(sols_lookup$`nra year`, nchar(sols_lookup$`nra year`) - 2 + 1, nchar(sols_lookup$`nra year`))
+yr <- trimws(substr(sols_lookup$`nra year`, nchar(sols_lookup$`nra year`) - 2 + 1, nchar(sols_lookup$`nra year`)))
 
 sols_lookup$'solciitation id' <- paste0(yr, "-", prog, yr)
 
