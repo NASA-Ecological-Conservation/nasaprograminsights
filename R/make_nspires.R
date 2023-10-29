@@ -73,6 +73,11 @@ nspires$people <- people
 nspires$lookup <- nasaprograminsights::sols_lookup
 
 
+# to be safe
+if(dplyr::is_grouped_df(nspires$proposals)) nspires$proposals <- dplyr::ungroup(nspires$proposals) 
+if(dplyr::is_grouped_df(nspires$people)) nspires$people <- dplyr::ungroup(nspires$people) 
+if(dplyr::is_grouped_df(nspires$sols_lookup)) nspires$sols_lookup <- dplyr::ungroup(nspires$sols_lookup) 
+
 rm(proposals, people)
 
 return(nspires)
