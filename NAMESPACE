@@ -3,3 +3,5 @@
 export(deduplicate_cols)
 export(deduplicate_rows)
 export(make_nspires)
+export(munge.nspires.people)
+export(munge.nspires.proposals)

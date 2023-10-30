@@ -4,6 +4,7 @@
 #' @title Munge internal NSPIRES proposal database (mostly the column names....)
 #' @description returns an object of class data.frame
 #' @param df Data from the internal-access-only NSPIRES. Currently this function only really supports the "proposal_master" files
+#' @export
 
 munge.nspires.proposals <- function(df) {
   df <- as.data.frame(df) 
@@ -104,6 +105,27 @@ munge.nspires.proposals <- function(df) {
   df <- df |>
     dplyr::mutate("solicitation id" = stringr::str_extract(`proposal number`, "^.*(?=(-))"))  |>
     dplyr::relocate("solicitation id")
+  
+
+  ## munge the numbers (budget amounts, years)
+  budgcols <- names(df)[grepl('budget amount', x = tolower(names(df))) & !grepl("question", x=tolower(names(df)))]
+  budgcols <- which(names(df) %in% budgcols)
+  # yrcols <- names(df)[grepl('budget year', x = tolower(names(df))) & !grepl("question", x=tolower(names(df)))]
+  # yrcols <- which(names(df) %in% yrcols)
+  # this is a gross workaround but whatever for now..
+  for(i in seq_along(budgcols)){
+    temp=df[,budgcols[i]]
+    if(!is.matrix(temp)){ temp <- as.matrix(temp)} # forcing to matrix because readr::parse_number doesnt work on tibble, not sure what to do 
+    if(!is.character(temp)){temp <- as.character(temp)}
+       df[,budgcols[i]] <- temp |> readr::parse_number()
+       rm(temp)
+  }
+
+  STOPPED HERE WANT TO CREATE A NEW COL FOR PROPOSED BUDGET
+  TOTAL  
+  # df[,budgcols] |> rowsum(na.rm = TRUE)
+  # 
+  
   
   return(df)
   

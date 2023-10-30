@@ -5,10 +5,11 @@
 \title{Make a list of munged NSPIRES data using local data sources.}
 \usage{
 make_nspires(
-  dir = "data-raw/data-raw-internal/nspires-internal",
+  dir = "nspires-data/data-raw-internal/nspires-internal",
   N = 200,
   tokeep = c("selected", "declined", "submitted", "selectable", "invited", "awarded"),
-  removeppl = TRUE
+  removeppl = TRUE,
+  returnclean = TRUE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ make_nspires(
 \item{tokeep}{Character vector. Will keep only the proposals with proposal stus in those listed in the vector. IF NULL, will not remove any proposals.}
 
 \item{removeppl}{Logical. Default TRUE will keep ONLY the people who are associated with proposals in the data frame. FALSE will keep all people.}
+
+\item{returnclean}{Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles,}
 }
 \description{
 Make a list of munged NSPIRES data using local data sources.

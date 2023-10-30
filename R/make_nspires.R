@@ -4,9 +4,12 @@
 #' @param removeppl Logical. Default TRUE will keep ONLY the people who are associated with proposals in the data frame. FALSE will keep all people.
 #' @param dir Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.
 #' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.
+#' @param returnclean Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles, 
  
 make_nspires <- function(dir="nspires-data/data-raw-internal/nspires-internal", N=200,
-                         tokeep=c("selected", "declined", "submitted","selectable","invited","awarded"), removeppl=TRUE){
+                         tokeep=c("selected", "declined", "submitted","selectable","invited","awarded","rejected"), 
+                         removeppl=TRUE, 
+                         returnclean=TRUE){
 # light helper funs...
 not_any_na <- function(x) all(!is.na(x))
 not_all_na <- function(x) any(!is.na(x))
@@ -70,7 +73,6 @@ if(removeppl){
 # to be safe
 if(dplyr::is_grouped_df(proposals)) proposals <- dplyr::ungroup(proposals) 
 if(dplyr::is_grouped_df(people)) people <- dplyr::ungroup(people) 
-if(dplyr::is_grouped_df(sols_lookup)) sols_lookup <- dplyr::ungroup(sols_lookup) 
 
 nspires <- list()
 nspires$proposals <- as.data.frame(proposals)
