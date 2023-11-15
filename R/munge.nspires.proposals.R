@@ -121,8 +121,8 @@ munge.nspires.proposals <- function(df) {
        rm(temp)
   }
 
-  STOPPED HERE WANT TO CREATE A NEW COL FOR PROPOSED BUDGET
-  TOTAL  
+  # STOPPED HERE WANT TO CREATE A NEW COL FOR PROPOSED BUDGET
+  # TOTAL  
   # df[,budgcols] |> rowsum(na.rm = TRUE)
   # 
   
