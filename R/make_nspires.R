@@ -5,13 +5,13 @@
 #' @param dir Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.
 #' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.
 #' @param returnclean Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles, 
-#' @param addeaprogram Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`
+#' @param addprogramname Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`
  
 make_nspires <- function(dir="nspires-data/", # where is the internal data stored
                          N=200,
                          tokeep=c("selected", "declined", "submitted","selectable","invited","awarded","rejected"), 
                          removeppl=TRUE, 
-                         returnclean=TRUE, addeaprogram=TRUE){
+                         returnclean=TRUE, addprogramname=TRUE){
 # light helper funs...
 not_any_na <- function(x) all(!is.na(x))
 not_all_na <- function(x) any(!is.na(x))
@@ -55,7 +55,7 @@ if(!is.null(tokeep)){
   dplyr::filter(tolower(`proposal status`) %in% tolower(tokeep))
 }
 
-if(addeaprogram){
+if(addprogramname){
   # data(package="nasaprograminsights")
   lookup <- nasaprograminsights::sols_lookup
   dplyr::left_join(proposals, lookup, relationship="many-to-many")

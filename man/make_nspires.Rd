@@ -11,7 +11,7 @@ make_nspires(
     "rejected"),
   removeppl = TRUE,
   returnclean = TRUE,
-  addeaprogram = TRUE
+  addprogramname = TRUE
 )
 }
 \arguments{
@@ -25,7 +25,7 @@ make_nspires(
 
 \item{returnclean}{Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles,}
 
-\item{addeaprogram}{Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`}
+\item{addprogramname}{Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`}
 }
 \description{
 Make a list of munged NSPIRES data using local data sources.
