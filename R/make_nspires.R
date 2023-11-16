@@ -6,12 +6,14 @@
 #' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.
 #' @param returnclean Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles, 
 #' @param addprogramname Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`
+#' @param dealwithspecialcases Logical. Default TRUE will handle some of the special-case NRA number/solicitation lookup id has (e.g., "ECOSTRES" versus "ECOSTRESS).
  
 make_nspires <- function(dir="nspires-data", # where is the internal data stored
                          N=200,
                          tokeep=c("selected", "declined", "submitted","selectable","invited","awarded","rejected"), 
                          removeppl=TRUE, 
                          returnclean=TRUE, 
+                         dealwithspecialcases = TRUE,
                          addprogramname=TRUE){
 # light helper funs...
 not_any_na <- function(x) all(!is.na(x))
@@ -47,9 +49,41 @@ for(i in 1:round(length(propfns)/N)){
 # clean the colnames....
 proposals <- munge.nspires.proposals(df=proposals) 
 
-## deal with special case issues, eventually...:
-# "Decisions/05"
+## HANDLE SPECIAL CASES
+# "Decisions/05" # but maybe keep because thats how ASP mapper has it..
 # 2-step proposals
+# ecostres vs ecostress
+if(dealwithspecialcases){
+  # need to figure otu the regex way but this will suffice for now
+# grepl('.*ECOSTRES*(\\d+)', proposals$`solicitation id`) |> which() |> length()
+proposals$`solicitation id` <-  
+  stringr::str_replace_all(
+    string = proposals$`solicitation id`,
+    pattern = "ECOSTRES1",
+    replacement = "ECOSTRESS1"
+  )
+proposals$`solicitation id` <-  
+  stringr::str_replace_all(
+    string = proposals$`solicitation id`,
+    pattern = "ECOSTRES2",
+    replacement = "ECOSTRESS2"
+  )
+
+proposals$`solicitation id` <-  
+  stringr::str_replace_all(
+    string = proposals$`solicitation id`,
+    pattern = "DISASTER1",
+    replacement = "DISASTERS1"
+  )
+proposals$`solicitation id` <-  
+  stringr::str_replace_all(
+    string = proposals$`solicitation id`,
+    pattern = "DISASTER2",
+    replacement = "DISASTERS2"
+  )
+
+} # end special cases
+
 
 # If indicated, filter the proposals using tokeep
 if(!is.null(tokeep)){
@@ -57,8 +91,10 @@ if(!is.null(tokeep)){
   dplyr::filter(tolower(`proposal status`) %in% tolower(tokeep))
 }
 
-if(addprogramname==TRUE){
-  proposals <- merge(proposals, nasaprograminsights::lookup, by = "solicitation id")
+if(addprogramname){
+  proposals$`solicitation id` |> unique() |> length()  
+  lookup$`solicitation id` |> unique() |> length()  
+  # proposals <- merge(proposals, nasaprograminsights::lookup, by = "solicitation id")
   stopifnot("program name" %in% tolower(colnames(proposals)))
   }
 
