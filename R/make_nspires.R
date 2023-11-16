@@ -48,6 +48,7 @@ proposals <- munge.nspires.proposals(df=proposals)
 
 ## deal with special case issues, eventually...:
 # "Decisions/05"
+# 2-step proposals
 
 # If indicated, filter the proposals using tokeep
 if(!is.null(tokeep)){
@@ -56,9 +57,7 @@ if(!is.null(tokeep)){
 }
 
 if(addprogramname==TRUE){
-  # data(package="nasaprograminsights")
-  lookup <- nasaprograminsights::lookup
-  dplyr::left_join(proposals, lookup, relationship="many-to-many")
+  proposals <- dplyr::left_join(proposals, nasaprograminsights::lookup, by="solicitation id", relationship="many-to-many")
   }
 
 # Import and Munge People Data --------------------------------------------
