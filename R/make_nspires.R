@@ -92,9 +92,7 @@ if(!is.null(tokeep)){
 }
 
 if(addprogramname){
-  proposals$`solicitation id` |> unique() |> length()  
-  lookup$`solicitation id` |> unique() |> length()  
-  # proposals <- merge(proposals, nasaprograminsights::lookup, by = "solicitation id")
+  proposals <- merge(proposals, nasaprograminsights::lookup, by = "solicitation id")
   stopifnot("program name" %in% tolower(colnames(proposals)))
   }
 
