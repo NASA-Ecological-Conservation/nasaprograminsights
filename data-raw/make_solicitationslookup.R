@@ -36,7 +36,7 @@ prog <- trimws(sub(".*\\-", "", x = sols_lookup$`solicitation number`)) # extrac
 # Extract last two digits of yr 
 yr <- trimws(substr(sols_lookup$`nra year`, nchar(sols_lookup$`nra year`) - 2 + 1, nchar(sols_lookup$`nra year`)))
 
-sols_lookup$'solciitation id' <- paste0(yr, "-", prog, yr)
+sols_lookup$'solicitation id' <- paste0(yr, "-", prog, yr)
 
 ## export to package
 usethis::use_data(sols_lookup, overwrite=TRUE)

@@ -5,11 +5,13 @@
 \title{Make a list of munged NSPIRES data using local data sources.}
 \usage{
 make_nspires(
-  dir = "nspires-data/data-raw-internal/nspires-internal",
+  dir = "nspires-data/",
   N = 200,
-  tokeep = c("selected", "declined", "submitted", "selectable", "invited", "awarded"),
+  tokeep = c("selected", "declined", "submitted", "selectable", "invited", "awarded",
+    "rejected"),
   removeppl = TRUE,
-  returnclean = TRUE
+  returnclean = TRUE,
+  addeaprogram = TRUE
 )
 }
 \arguments{
@@ -22,6 +24,8 @@ make_nspires(
 \item{removeppl}{Logical. Default TRUE will keep ONLY the people who are associated with proposals in the data frame. FALSE will keep all people.}
 
 \item{returnclean}{Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles,}
+
+\item{addeaprogram}{Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`}
 }
 \description{
 Make a list of munged NSPIRES data using local data sources.
