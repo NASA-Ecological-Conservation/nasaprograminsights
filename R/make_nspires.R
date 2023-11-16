@@ -86,7 +86,7 @@ if(dplyr::is_grouped_df(people)) people <- dplyr::ungroup(people)
 nspires <- list()
 nspires$proposals <- as.data.frame(proposals)
 nspires$people <- as.data.frame(people)
-nspires$lookup <- as.data.frame(nasaprograminsights::sols_lookup)
+nspires$lookup <- as.data.frame(nasaprograminsights::lookup)
 
 
 
