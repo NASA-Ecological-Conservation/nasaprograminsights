@@ -7,7 +7,7 @@
 #' @param returnclean Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles, 
 #' @param addprogramname Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`
  
-make_nspires <- function(dir="nspires-data/", # where is the internal data stored
+make_nspires <- function(dir="nspires-data", # where is the internal data stored
                          N=200,
                          tokeep=c("selected", "declined", "submitted","selectable","invited","awarded","rejected"), 
                          removeppl=TRUE, 
@@ -55,9 +55,9 @@ if(!is.null(tokeep)){
   dplyr::filter(tolower(`proposal status`) %in% tolower(tokeep))
 }
 
-if(addprogramname){
+if(addprogramname==TRUE){
   # data(package="nasaprograminsights")
-  lookup <- nasaprograminsights::sols_lookup
+  lookup <- nasaprograminsights::lookup
   dplyr::left_join(proposals, lookup, relationship="many-to-many")
   }
 

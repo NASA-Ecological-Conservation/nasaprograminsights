@@ -5,7 +5,7 @@
 \title{Make a list of munged NSPIRES data using local data sources.}
 \usage{
 make_nspires(
-  dir = "nspires-data/",
+  dir = "nspires-data",
   N = 200,
   tokeep = c("selected", "declined", "submitted", "selectable", "invited", "awarded",
     "rejected"),
