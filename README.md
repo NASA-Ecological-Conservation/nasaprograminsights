@@ -28,7 +28,7 @@ nspires <-
 # nspires contains 3 elements (data.frames):
 ##    lookup table to link program names and NOFOs
 ##    people: people listed on proposals
-##    proposals: 
+##    proposals: information regarding individual proposals
 ```
 
 ``` r

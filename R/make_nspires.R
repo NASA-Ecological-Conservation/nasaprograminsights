@@ -91,7 +91,9 @@ if(!is.null(tokeep)){
 }
 
 if(addprogramname){
-  proposals <- merge(proposals, nasaprograminsights::lookup, by = "solicitation id")
+  proposals <- merge(x = proposals, y = nasaprograminsights::lookup, 
+                     all = TRUE, #keep all proposals and solicitations
+                     by = "solicitation id")
   stopifnot("program name" %in% tolower(colnames(proposals)))
   }
 
