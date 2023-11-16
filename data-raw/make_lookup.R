@@ -1,6 +1,7 @@
 #' @name solicitationslookup
 #' @description
 #' @docType data
+#' @export
 #' A lookup table for ESD and ASP solicitations to easily index solicitations and proposals according to program name.
 
 fn <- list.files(pattern="asp-solicitation", full.names=TRUE, recursive=TRUE)
