@@ -29,9 +29,8 @@ pplfns  <- allpropfiles[grepl(x = allpropfiles, pattern = "people", ignore.case 
 ## so, using data.table is nice, because it removes the periods in colnames
 ## however, when propfns len >>500, i have issues with data.table::fread...
 ## therefore, i've created a loop to pull in N fns at a time
-
+proposals <- NULL
 for(i in 1:round(length(propfns)/N)){
-  # print("i")
   if(i==1){ temp <- proposals <- NULL}
   low <- i*N-N
   high <- i*N

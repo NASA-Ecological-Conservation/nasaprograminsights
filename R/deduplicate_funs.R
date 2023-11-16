@@ -34,12 +34,15 @@ deduplicate_cols <- function(dat){
 #' @param dat a data.frame comprising NSPIRES people_master files
 #' @export
 #' @param dat a data.frame comprising NSPIRES either proposal_master or people_master files
-#' 
+#'
 deduplicate_rows <- function(dat){
-  
-  dat <- dat |> dplyr::distinct(`proposal number`, `pi suid`, .keep_all = TRUE)
-  #not sure why i did the line below but it messes thigns up
-  # dat <- dat |> dplyr::group_by(title) |> dplyr::arrange(title, desc(`proposal number`)) |> dplyr::distinct(title, `pi suid` , .keep_all = TRUE) |> dplyr::ungroup()
 
-  return(dat)  
+  #not sure why i did the line below but it messes thigns up
+  dat <-
+    dat |> dplyr::group_by(title) |> 
+    dplyr::arrange(title, desc(`proposal number`)) |> 
+    dplyr::distinct(title, `pi suid` , .keep_all = TRUE) |> 
+    dplyr::ungroup()
+  
+  return(dat)
 }

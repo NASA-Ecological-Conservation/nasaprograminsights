@@ -9,7 +9,8 @@
 munge.nspires.proposals <- function(df) {
   df <- as.data.frame(df) 
   
-  
+
+# Annoying Munging -------------------------------------------------------
   ###FIRST: handle the fields named "Question N:". Many of them are the same, but have differnet question numbers. So let's deal with that first.
   colnames(df) <-
     trimws(
@@ -83,9 +84,14 @@ munge.nspires.proposals <- function(df) {
     df[,colstoremove] <- list(NULL)
     df[,eval(parse(text="new[i]"))] <- newcol
   }
+  
+
+# End Annoying Munging ----------------------------------------------------
+
   colnames(df) <- tolower(colnames(df))
   df <- deduplicate_cols(df)
   df <- deduplicate_rows(df)
+  
   
   # coalease statuses
   df <- df |> 
@@ -99,6 +105,7 @@ munge.nspires.proposals <- function(df) {
       replacement = "",
       ignore.case = TRUE
     )
+  
   ## need to create a unique solicitation identifier
   ### if prop numbers starts with "{", 
   #### we will just sacrifice the proposal id number being incorrect for now. 
@@ -109,6 +116,7 @@ munge.nspires.proposals <- function(df) {
 
   ## munge the numbers (budget amounts, years)
   budgcols <- names(df)[grepl('budget amount', x = tolower(names(df))) & !grepl("question", x=tolower(names(df)))]
+  budgcols <- c(budgcols, "proposed amount total")
   budgcols <- which(names(df) %in% budgcols)
   # yrcols <- names(df)[grepl('budget year', x = tolower(names(df))) & !grepl("question", x=tolower(names(df)))]
   # yrcols <- which(names(df) %in% yrcols)
@@ -117,16 +125,10 @@ munge.nspires.proposals <- function(df) {
     temp=df[,budgcols[i]]
     if(!is.matrix(temp)){ temp <- as.matrix(temp)} # forcing to matrix because readr::parse_number doesnt work on tibble, not sure what to do 
     if(!is.character(temp)){temp <- as.character(temp)}
-       df[,budgcols[i]] <- temp |> readr::parse_number()
+       df[,budgcols[i]] <- temp |> readr::parse_number() |> round()
        rm(temp)
   }
 
-  # STOPPED HERE WANT TO CREATE A NEW COL FOR PROPOSED BUDGET
-  # TOTAL  
-  # df[,budgcols] |> rowsum(na.rm = TRUE)
-  # 
-  
-  
   return(df)
   
 } # END FUN
