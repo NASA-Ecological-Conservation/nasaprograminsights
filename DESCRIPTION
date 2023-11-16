@@ -2,7 +2,7 @@ Package: nasaprograminsights
 Type: Package
 Title: Generate Program Insights Using Public and Internal Data 
 Version: 0.1.0
-Authors: 
+Author: 
   c(person(given = "Jessica",
            family = "Burnett",
            role = c("aut", "cre"),

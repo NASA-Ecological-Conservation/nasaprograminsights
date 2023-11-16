@@ -8,20 +8,20 @@ stopifnot(length(fn)>0)
 names <- readxl::excel_sheets(fn)
 
 for(i in seq_along(names)){
-  if(i == 1) sols_lookup <- NULL
+  if(i == 1) lookup <- NULL
   (if(tolower(names[i]) %in% c("readme", "read me")) next())
   temp <- readxl::read_xlsx(fn, sheet = names[i]) |> 
     dplyr::mutate(`Program Name` = names[i])
-  sols_lookup <- dplyr::bind_rows(temp, sols_lookup)
+  lookup <- dplyr::bind_rows(temp, lookup)
   print(names[i])
   rm(temp)
 }
 
 ## munge colnames
-names(sols_lookup) <- tolower(names(sols_lookup))
+names(lookup) <- tolower(names(lookup))
 
 
-sols_lookup <- sols_lookup |>
+lookup <- lookup |>
   dplyr::rename("solicitation number" = 'nra number') |> 
   as.data.frame() |> 
   dplyr::select("solicitation title", "solicitation number", "nra year", "program name")
@@ -31,12 +31,12 @@ sols_lookup <- sols_lookup |>
 # we need this because we ned to link programs to proposals
 # this solution is terrible but whatever for now
 # needs to be 21-SERVIR21
-prog <- trimws(sub(".*\\-", "", x = sols_lookup$`solicitation number`)) # extract portion of new var
+prog <- trimws(sub(".*\\-", "", x = lookup$`solicitation number`)) # extract portion of new var
 
 # Extract last two digits of yr 
-yr <- trimws(substr(sols_lookup$`nra year`, nchar(sols_lookup$`nra year`) - 2 + 1, nchar(sols_lookup$`nra year`)))
+yr <- trimws(substr(lookup$`nra year`, nchar(lookup$`nra year`) - 2 + 1, nchar(lookup$`nra year`)))
 
-sols_lookup$'solicitation id' <- paste0(yr, "-", prog, yr)
+lookup$'solicitation id' <- paste0(yr, "-", prog, yr)
 
 ## export to package
-usethis::use_data(sols_lookup, overwrite=TRUE)
+usethis::use_data(lookup, overwrite=TRUE)
