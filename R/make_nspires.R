@@ -11,7 +11,8 @@ make_nspires <- function(dir="nspires-data", # where is the internal data stored
                          N=200,
                          tokeep=c("selected", "declined", "submitted","selectable","invited","awarded","rejected"), 
                          removeppl=TRUE, 
-                         returnclean=TRUE, addprogramname=TRUE){
+                         returnclean=TRUE, 
+                         addprogramname=TRUE){
 # light helper funs...
 not_any_na <- function(x) all(!is.na(x))
 not_all_na <- function(x) any(!is.na(x))
@@ -57,7 +58,8 @@ if(!is.null(tokeep)){
 }
 
 if(addprogramname==TRUE){
-  proposals <- dplyr::left_join(proposals, nasaprograminsights::lookup, by="solicitation id", relationship="many-to-many")
+  proposals <- merge(proposals, nasaprograminsights::lookup, by = "solicitation id")
+  stopifnot("program name" %in% tolower(colnames(proposals)))
   }
 
 # Import and Munge People Data --------------------------------------------
