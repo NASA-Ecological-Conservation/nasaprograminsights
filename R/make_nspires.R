@@ -40,7 +40,9 @@ for(i in 1:round(length(propfns)/N)){
   temp[[i]] <- lapply(tempfns, read.csv) |> #, fileEncoding = "UTF-16LE") |> ## fread keeps crashing even when ram use is very low...annoying 
     data.table::rbindlist(fill=TRUE)
   if(i == max(round(length(propfns) / N))) {
-    proposals <- data.table::rbindlist(temp, fill = TRUE) |> dplyr::select_if(not_all_na)#remove column if all fields == NA
+    #remove column if all fields == NA
+    # remove duplicate rows (incase of duplicate files)
+    proposals <- data.table::rbindlist(temp, fill = TRUE) |> dplyr::select_if(not_all_na) |> dplyr::distinct() 
     rm(temp, low, high, i)
   }
 }

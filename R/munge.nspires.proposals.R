@@ -2,14 +2,12 @@
 # munge.nspires.proposals ----------------------------------------
 #' @name munge.nspires.proposals
 #' @title Munge internal NSPIRES proposal database (mostly the column names....)
-#' @description returns an object of class data.frame
+#' @description returns an object of class data.frame. Removes all the "LINKED"   "PENDING"  "REJECTED" "LOCKED" proposals.
 #' @param df Data from the internal-access-only NSPIRES. Currently this function only really supports the "proposal_master" files
 #' @export
 
 munge.nspires.proposals <- function(df) {
   df <- as.data.frame(df) 
-  
-
 # Annoying Munging -------------------------------------------------------
   ###FIRST: handle the fields named "Question N:". Many of them are the same, but have differnet question numbers. So let's deal with that first.
   colnames(df) <-
@@ -47,8 +45,8 @@ munge.nspires.proposals <- function(df) {
     ignore.case = TRUE
   )
   
-  ## deal with the "nearly similar" column names...
-  old <-
+## deal with the "nearly similar" column names...
+{  old <-
     c(
       "NASA-provided high end computing",
       "When did you receive your Ph.D. Degree",
@@ -84,19 +82,21 @@ munge.nspires.proposals <- function(df) {
     df[,colstoremove] <- list(NULL)
     df[,eval(parse(text="new[i]"))] <- newcol
   }
+  }
+
   
-
 # End Annoying Munging ----------------------------------------------------
-
   colnames(df) <- tolower(colnames(df))
   df <- deduplicate_cols(df)
   df <- deduplicate_rows(df)
   
   
   # coalease statuses
-  df <- df |> 
-    dplyr::mutate(`proposal status` = trimws(dplyr::coalesce(`proposal status`, status))) |> 
+  if ("status" %in% tolower(names(df))){
+    df <- df |>
+    dplyr::mutate(`proposal status` = trimws(dplyr::coalesce(`proposal status`, status))) |>
     dplyr::select(-status)
+    }
   # trim whitespace
   df$`proposal number` <-
     gsub(
@@ -106,14 +106,19 @@ munge.nspires.proposals <- function(df) {
       ignore.case = TRUE
     )
   
-  ## need to create a unique solicitation identifier
-  ### if prop numbers starts with "{", 
-  #### we will just sacrifice the proposal id number being incorrect for now. 
+
+# Remove REJECTED, LINKED, PENDING, LOCKED, REJECTED-----------------------------------
+ df <- df |> dplyr::filter(!toupper(`proposal status`)%in% c('REJECTED', 'LINKED', 'PENDING', 'LOCKED'))
+# Append Solicitation Acronym & Handle 2-Step Proposals  ---------------------------------------------
+## Add a solicitation id column
   df <- df |>
-    dplyr::mutate("solicitation id" = stringr::str_extract(`proposal number`, "^.*(?=(-))"))  |>
-    dplyr::relocate("solicitation id")
+    dplyr::mutate("solicitation id" = stringr::str_extract(`proposal number`, "^.*(?=(-))")) |> 
+    dplyr::relocate("solicitation id") |> 
+    dplyr::mutate("solicitation id" = gsub(pattern="-1", x = `solicitation id`, replacement="")) |> 
+    dplyr::mutate("solicitation id" = gsub(pattern="-2", x = `solicitation id`, replacement=""))
   
 
+# Munge Budgets -----------------------------------------------------------
   ## munge the numbers (budget amounts, years)
   budgcols <- names(df)[grepl('budget amount', x = tolower(names(df))) & !grepl("question", x=tolower(names(df)))]
   budgcols <- c(budgcols, "proposed amount total")

@@ -37,12 +37,8 @@ deduplicate_cols <- function(dat){
 #'
 deduplicate_rows <- function(dat){
 
-  #not sure why i did the line below but it messes thigns up
-  dat <-
-    dat |> dplyr::group_by(title) |> 
-    dplyr::arrange(title, desc(`proposal number`)) |> 
-    dplyr::distinct(title, `pi suid` , .keep_all = TRUE) |> 
-    dplyr::ungroup()
-  
-  return(dat)
+  ## some solicitations have something wonky where they have to separate calls for the same solicitaiton, so we want to remove duplicates first..simple
+  dat <- 
+    dat |> dplyr::distinct(`proposal number`, .keep_all = TRUE)
+    return(dat)
 }
