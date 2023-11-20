@@ -107,6 +107,7 @@ munge.nspires.proposals <- function(df) {
     )
   
 
+
 # Remove REJECTED, LINKED, PENDING, LOCKED, REJECTED-----------------------------------
  df <- df |> dplyr::filter(!toupper(`proposal status`)%in% c('REJECTED', 'LINKED', 'PENDING', 'LOCKED'))
 # Append Solicitation Acronym & Handle 2-Step Proposals  ---------------------------------------------
@@ -115,7 +116,9 @@ munge.nspires.proposals <- function(df) {
     dplyr::mutate("solicitation id" = stringr::str_extract(`proposal number`, "^.*(?=(-))")) |> 
     dplyr::relocate("solicitation id") |> 
     dplyr::mutate("solicitation id" = gsub(pattern="-1", x = `solicitation id`, replacement="")) |> 
-    dplyr::mutate("solicitation id" = gsub(pattern="-2", x = `solicitation id`, replacement=""))
+    dplyr::mutate("solicitation id" = gsub(pattern="-2", x = `solicitation id`, replacement="")) |> 
+    dplyr::mutate("solicitation id" = gsub(pattern="_1", x = `solicitation id`, replacement="")) |> 
+    dplyr::mutate("solicitation id" = gsub(pattern="_2", x = `solicitation id`, replacement=""))
   
 
 # Munge Budgets -----------------------------------------------------------

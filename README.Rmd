@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 
 ```{r setup, eval=FALSE}
 devtools::install_github(repo="NASA-Ecological-Conservation/nasaprograminsights", dependencies = FALSE, quiet = TRUE)
+pkgs <- c("nasaprograminsights"),"dplyr","ggplot2")
 ```
 
 ```{r make-data-locally, warnings=FALSE, eval=FALSE}

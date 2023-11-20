@@ -7,8 +7,7 @@
 make_nspires(
   dir = "nspires-data",
   N = 200,
-  tokeep = c("selected", "declined", "submitted", "selectable", "invited", "awarded",
-    "rejected"),
+  tokeep = c("selected", "declined", "submitted", "selectable", "invited", "awarded"),
   removeppl = TRUE,
   returnclean = TRUE,
   dealwithspecialcases = TRUE,

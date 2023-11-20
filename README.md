@@ -5,6 +5,7 @@
 
 ``` r
 devtools::install_github(repo="NASA-Ecological-Conservation/nasaprograminsights", dependencies = FALSE, quiet = TRUE)
+pkgs <- c("nasaprograminsights"),"dplyr","ggplot2")
 ```
 
 ``` r

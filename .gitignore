@@ -5,3 +5,5 @@
 inst/doc
 .DS_Store
 *.pdf
+temp.csv
+data-raw/~$esd-asp-solicitations-lookup_20231023.xlsx

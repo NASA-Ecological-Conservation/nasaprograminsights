@@ -14,9 +14,8 @@ munge.nspires.people <- function(df){
       ## why the hell arent these named the same thing!?!?!?!? THIS MAKSE ZERO SENSE!!!!
       # in proposal data, prop number =="Proposal Number"
       # in people data, prop number =="Response Number"
-      colnames(df)[which(tolower(colnames(df))=="response number")] <- "Proposal Number"
       colnames(df) <- tolower(colnames(df))
-      
+      if(!"proposal number" %in% colnames(df)) colnames(df)[which(colnames(df)=="response number")] <- "proposal number"
       
 
       
