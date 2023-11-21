@@ -5,7 +5,8 @@
 
 ``` r
 devtools::install_github(repo="NASA-Ecological-Conservation/nasaprograminsights", dependencies = FALSE, quiet = TRUE)
-pkgs <- c("nasaprograminsights"),"dplyr","ggplot2")
+pkgs <- c("nasaprograminsights","dplyr","ggplot2")
+lapply(pkgs, require, character.only = TRUE)
 ```
 
 ``` r
@@ -34,14 +35,8 @@ nspires <-
 
 ``` r
 # Inspect Data ------------------------------------------------------------
-# here is a list of EA programs
-(programs <- nspires$lookup$`program name` |> unique() |> sort())
-# here is a list of the programs for which we have proposal data:
+# here is a list of programs. note that not all solicitations are assigned a program.
+(programs <- sort(unique(nspires$lookup$`program name`))
+ # here is a list of the programs for which we have proposal data:
 # nspires$proposals[!nspires$proposals$`solicitation id` %in% nspires$lookup$`solciitation id`,] 
-```
-
-``` r
-
-# ggplot()+
-#   geom_histogram()
 ```

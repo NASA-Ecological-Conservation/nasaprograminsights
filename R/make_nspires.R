@@ -25,22 +25,25 @@ not_all_na <- function(x) any(!is.na(x))
 # Create temporary filename objs for import --------------------------------------------------
 ### this assumes that there are two types of files, one with the name "people" in filename and one with the word "master". 
 allfns <- list.files(dir, recursive=TRUE, full.names=TRUE, ignore.case=TRUE)
+#ignore anything that isnt a .txt. xlsx or csv
+allfns <- which(stringr::str_detect(allfns, pattern = ".*\\.(txt|xlsx|csv)$"))
 allpropfns <- list.files(dir, pattern="proposal", recursive = TRUE, full.names = TRUE, ignore.case = TRUE)
+
 propfns  <- allpropfns[grepl(x = allpropfns, pattern = "master|msater|mastr", ignore.case = TRUE)]
 pplfns  <- allpropfns[grepl(x = allpropfns, pattern = "peopl|people|poeple|poeple", ignore.case = TRUE)]
 aorfns  <- allpropfns[grepl(x = allpropfns, pattern = "aor", ignore.case = TRUE)]
-
-
-tohandle=allfns[which(!allpropfns %in% c(propfns, pplfns, aorfns))]
-if(length(tohandle)>0) message("the following ", length(tohandle)," files are not being imported, as they do not have 'master' or 'people' in the filename.", print(tohandle))
 
 # Import & munge proposal master data ------------------------------------------------------------
 ## so, using data.table is nice, because it removes the periods in colnames
 ## however, when propfns len >>500, i have issues with data.table::fread...
 ## therefore, i've created a loop to pull in N fns at a time
+
 proposals <- NULL
 for(i in 1:round(length(propfns)/N)){
-  if(i==1){ temp <- proposals <- NULL}
+  if(i==1){ temp <- proposals <- NULL;
+  print(paste("Importing proposals data from local machine... (ignore the 'embedded nul(s) warning for now...)"))
+  }else{print(paste("Importing proposals data from local machine..."))}
+  if(i==10) print("still importing, hold your horses!")
   low <- i*N-N
   high <- i*N
   if(high > length(propfns))high=length(propfns)
@@ -55,55 +58,39 @@ for(i in 1:round(length(propfns)/N)){
     rm(temp, low, high, i)
   }
 }
+print("...done importing proposals data.")
 
-# Do some messy munging----
+# Munge some of the messy stuff in background ----
 proposals <- munge.nspires.proposals(df=proposals) 
 
-# Add inferred NRA number -------------------------------------------------
-proposals <- proposals |> dplyr::mutate(`solicitation number` = substr(
-  x = `solicitation id`,
-  start = 1,
-  stop = nchar(`solicitation id`) - 2
-))
-letters=stringr::str_extract(proposals$`solicitation number`, "(?<=-).*")
-yy=stringr::str_extract(proposals$`solicitation id`, "[0-9]+")
-proposals$`solicitation number` <- paste0("NNH", yy, "ZDA001N-",letters)
-rm(yy, letters)
+# Add inferred or actual NRA number  -------------------------------------------------
+toinfer=which(!proposals$`solicitation id` %in% lookup$`solicitation id`)
+toadd=which(proposals$`solicitation id` %in% lookup$`solicitation id`)
+
+print("For solicitations not in nasaprograminsights::lookup table, I am inferring the solicitation number...")
+for(i in seq_along(toadd)){ # shoudl reduce for comp time.
+  if(i==1 & !"solicitation number" %in% tolower(colnames(proposals))) proposals$`solicitation number` <- NA
+  new <- unique(lookup$`solicitation number`[which(lookup$`solicitation id` == proposals$`solicitation id`[toadd[i]])])
+  proposals[toadd[i],"solicitation number"] <- new
+}
+rm(toinfer, toadd)
+
+tochg=which(is.na(proposals$`solicitation number`))
+proposals[tochg, "solicitation number"] <- substr(x = proposals[tochg, "solicitation id"],
+              start = 1,
+              stop = nchar(proposals[tochg, "solicitation id"]) - 2)
+
+letters=stringr::str_extract(proposals[tochg, "solicitation number"], "(?<=-).*")
+yy=stringr::str_extract(proposals[tochg, "solicitation number"], "[0-9]+")
+proposals[tochg, "solicitation number"]<- paste0("NNH", yy, "ZDA001N-",letters)
+rm(yy, letters, tochg)
+
 
 #!!# HANDLE SPECIAL CASES
 # "Decisions/05" # but maybe keep because thats how ASP mapper has it..
 # 2-step proposals
 # ecostres vs ecostress
-if(dealwithspecialcases){
-  # need to figure otu the regex way but this will suffice for now
-# grepl('.*ECOSTRES*(\\d+)', proposals$`solicitation id`) |> which() |> length()
-proposals$`solicitation id` <-  
-  stringr::str_replace_all(
-    string = proposals$`solicitation id`,
-    pattern = "ECOSTRES1",
-    replacement = "ECOSTRESS1"
-  )
-proposals$`solicitation id` <-  
-  stringr::str_replace_all(
-    string = proposals$`solicitation id`,
-    pattern = "ECOSTRES2",
-    replacement = "ECOSTRESS2"
-  )
 
-proposals$`solicitation id` <-  
-  stringr::str_replace_all(
-    string = proposals$`solicitation id`,
-    pattern = "DISASTER1",
-    replacement = "DISASTERS1"
-  )
-proposals$`solicitation id` <-  
-  stringr::str_replace_all(
-    string = proposals$`solicitation id`,
-    pattern = "DISASTER2",
-    replacement = "DISASTERS2"
-  )
-
-} # end special cases
 
 if ("sequence number" %in% colnames(proposals))
   proposals <- proposals |> dplyr::select(-`sequence number`)
@@ -111,14 +98,33 @@ if ("sequence number" %in% colnames(proposals))
 # organize columns for easy use
 proposals <- proposals |> dplyr::relocate("solicitation number", "solicitation id", "proposal number")
 
+# Troubleshooting ---------------------------------------------------------
+temp <- lookup |> dplyr::filter(`was solicited`  %in% c( TRUE, NA)); 
+tofix=temp$`solicitation number`[which(!temp$`solicitation number` %in%  proposals$`solicitation number`)]#not in the proposals dataframe or is incorrectly mapped
+x=allfns[sort(unlist(lapply(X =tofix, FUN= function(x){grepl(x, allfns) |> which()})))]
+y=!(grepl(pattern = "noi" ,x=x, ignore.case=TRUE))
+
+if(length(y > 0))
+  warning(
+    "the following solicitations may not have been imported to the ",
+    paste(allfns[y], collapse = "\n")
+  )
+rm(temp, tofix,x,y)
+
+
+# Filter Proposals --------------------------------------------------------
 # If indicated, filter the proposals using tokeep
 if(!is.null(tokeep)){
- proposals <- proposals |> 
-  dplyr::filter(tolower(`proposal status`) %in% tolower(tokeep))
+  print("Filtering proposals to include only:")
+  print(tokeep)
+  proposals <- proposals |> 
+    dplyr::filter(tolower(`proposal status`) %in% tolower(tokeep))
 }
 
+# Add Program Name  -------------------------------------------------------
 if(addprogramname){
-  test <-
+print("adding program name ")
+  proposals <-
     dplyr::full_join(
       x = proposals,
       y = nasaprograminsights::lookup,
@@ -128,28 +134,27 @@ if(addprogramname){
     dplyr::relocate("program name")
   
   stopifnot("program name" %in% tolower(colnames(proposals)))
-  
   }
 
 # Import and Munge People Data --------------------------------------------
 # i should probably move out of data.table
+print("importing people data...")
 people <- lapply(pplfns, data.table::fread) |>
   data.table::rbindlist(fill=TRUE) |> 
-  as.data.frame()
+  as.data.frame() |> 
+  dplyr::select(-`Response seq number`)
 colnames(people) <- tolower(colnames(people))
+if(any(duplicated(colnames(people)))){
+  people <- people |> dplyr::distinct(`pi suid`,`response number`, .keep_all = TRUE)#, `pi first`, `pi last`)
+}
 
-people$`proposal number` |> unique()
-# |> 
-  # munge.nspires.people()
-# browser()
-# Resolve argument
 if(removeppl){
   people <- people |> dplyr::filter(`proposal number` %in% proposals$`proposal number`)
 }
 
-# if(!all(people$`member suid` %in% proposals$`pi suid`))
-#   warning("FYI. -- not all PI SUIDs from 'people' are in 'proposals'"
-# )
+if(!all(proposals$`member suid` %in% proposals$`pi suid`))
+  warning("FYI: not all PI SUIDs from `proposals` are in the `people` dataframe as part of output."
+)
 
 # Export Data Together to Package as "nspires"  -----------------------------------------------------------
 # to be safe
@@ -161,9 +166,7 @@ nspires$proposals <- as.data.frame(proposals)
 nspires$people <- as.data.frame(people)
 nspires$lookup <- as.data.frame(nasaprograminsights::lookup)
 
-
-
-rm(proposals, people)
+print("Exporting NSPIRES proposals, people, and a solicitations lookup table in a single list. ")
 
 return(nspires)
 }

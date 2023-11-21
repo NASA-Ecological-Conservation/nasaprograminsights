@@ -105,7 +105,7 @@ munge.nspires.proposals <- function(df) {
       replacement = "",
       ignore.case = TRUE
     )
-  
+
 
 
 # Remove REJECTED, LINKED, PENDING, LOCKED, REJECTED-----------------------------------
