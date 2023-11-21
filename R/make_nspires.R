@@ -5,15 +5,13 @@
 #' @param dir Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.
 #' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.
 #' @param returnclean Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles, 
-#' @param addprogramname Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`
-#' @param dealwithspecialcases Logical. Default TRUE will handle some of the special-case NRA number/solicitation lookup id has (e.g., "ECOSTRES" versus "ECOSTRESS).
- 
+#' @param addprogramname Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`. Note that some proposals/solicitations will not have a value for `program name` (i.e. NA).
+
 make_nspires <- function(dir="nspires-data", # where is the internal data stored
                          N=200,
                          tokeep=c("selected", "declined", "submitted","selectable","invited","awarded"), 
                          removeppl=TRUE, 
                          returnclean=TRUE, 
-                         dealwithspecialcases = TRUE,
                          addprogramname=TRUE){
   
 # FOR DEV only

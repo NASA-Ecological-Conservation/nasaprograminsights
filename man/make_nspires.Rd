@@ -10,7 +10,6 @@ make_nspires(
   tokeep = c("selected", "declined", "submitted", "selectable", "invited", "awarded"),
   removeppl = TRUE,
   returnclean = TRUE,
-  dealwithspecialcases = TRUE,
   addprogramname = TRUE
 )
 }
@@ -25,9 +24,7 @@ make_nspires(
 
 \item{returnclean}{Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles,}
 
-\item{dealwithspecialcases}{Logical. Default TRUE will handle some of the special-case NRA number/solicitation lookup id has (e.g., "ECOSTRES" versus "ECOSTRESS).}
-
-\item{addprogramname}{Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`}
+\item{addprogramname}{Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`. Note that some proposals/solicitations will not have a value for `program name` (i.e. NA).}
 }
 \description{
 Make a list of munged NSPIRES data using local data sources.
