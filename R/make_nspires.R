@@ -146,13 +146,25 @@ if(any(duplicated(colnames(people)))){
   people <- people |> dplyr::distinct(`pi suid`,`response number`, .keep_all = TRUE)#, `pi first`, `pi last`)
 }
 
+# mugne colnames a bit
+if("proposal number" %in% names(people)) people <- people |> dplyr::select(-'proposal number')
+people <- people |> dplyr::rename('proposal number' = 'response number')
+
+# people$'proposal number'[which(!people$`proposal number` %in% proposals$`proposal number`)] ## THIS SHOUDL BE ZERO...
+# add solicitation id to people
+people <- dplyr::left_join(people, proposals |> dplyr::select(`solicitation id`, `proposal number`))
+
+
 if(removeppl){
   people <- people |> dplyr::filter(`proposal number` %in% proposals$`proposal number`)
 }
 
+
+## slightly munge colnames of people
 if(!all(proposals$`member suid` %in% proposals$`pi suid`))
   warning("FYI: not all PI SUIDs from `proposals` are in the `people` dataframe as part of output."
 )
+
 
 # Export Data Together to Package as "nspires"  -----------------------------------------------------------
 # to be safe
