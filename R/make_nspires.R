@@ -147,13 +147,17 @@ if(any(duplicated(colnames(people)))){
 }
 
 # mugne colnames a bit
-if("proposal number" %in% names(people)) people <- people |> dplyr::select(-'proposal number')
-people <- people |> dplyr::rename('proposal number' = 'response number')
+if(("proposal status" %in% names(people)) &
+   ("status" %in% names(people)))
+  people <- people |> dplyr::select(-'proposal status') |> dplyr::rename("proposal status" = "status")
+if (("proposal number" %in% names(people)) &
+    ("response number" %in% names(people)))
+  people <- people |> dplyr::select(-'proposal number') |> dplyr::rename('proposal number' = 'response number')
 
 # people$'proposal number'[which(!people$`proposal number` %in% proposals$`proposal number`)] ## THIS SHOUDL BE ZERO...
 # add solicitation id to people
-people <- dplyr::left_join(people, proposals |> dplyr::select(`solicitation id`, `proposal number`))
-
+people <- dplyr::left_join(people, proposals |> dplyr::select(`solicitation id`, `proposal number`), relationship="many-to-many") |> 
+  dplyr::distinct("proposal number", "pi suid", "member suid", .keep_all=TRUE)
 
 if(removeppl){
   people <- people |> dplyr::filter(`proposal number` %in% proposals$`proposal number`)
