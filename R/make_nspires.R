@@ -134,7 +134,7 @@ print("adding program name ")
   stopifnot("program name" %in% tolower(colnames(proposals)))
   }
 
-# Import and Munge People Data --------------------------------------------
+# Import People Data --------------------------------------------
 # i should probably move out of data.table
 print("importing people data...")
 people <- lapply(pplfns, data.table::fread) |>
@@ -143,25 +143,27 @@ people <- lapply(pplfns, data.table::fread) |>
   dplyr::select(-`Response seq number`)
 colnames(people) <- tolower(colnames(people))
 if(any(duplicated(colnames(people)))){
-  people <- people |> dplyr::distinct(`pi suid`,`response number`, .keep_all = TRUE)#, `pi first`, `pi last`)
+  people <- people |> dplyr::distinct(`pi suid`,`member suid`,`response number`, .keep_all = TRUE)#, `pi first`, `pi last`)
 }
 
-# mugne colnames a bit
+# Munge People Data -------------------------------------------------------
+## just ensure proposal status and proposal number are in df, since that's what theyre called in the propsoals df (above)
 if(("proposal status" %in% names(people)) &
    ("status" %in% names(people)))
   people <- people |> dplyr::select(-'proposal status') |> dplyr::rename("proposal status" = "status")
 if (("proposal number" %in% names(people)) &
     ("response number" %in% names(people)))
   people <- people |> dplyr::select(-'proposal number') |> dplyr::rename('proposal number' = 'response number')
-
-# people$'proposal number'[which(!people$`proposal number` %in% proposals$`proposal number`)] ## THIS SHOUDL BE ZERO...
-# add solicitation id to people
-people <- dplyr::left_join(people, proposals |> dplyr::select(`solicitation id`, `proposal number`), relationship="many-to-many") |> 
-  dplyr::distinct("proposal number", "pi suid", "member suid", .keep_all=TRUE)
-
 if(removeppl){
   people <- people |> dplyr::filter(`proposal number` %in% proposals$`proposal number`)
 }
+
+# people$'proposal number'[which(!people$`proposal number` %in% proposals$`proposal number`)] ## THIS SHOUDL BE ZERO...
+
+# add solicitation id to people
+people <- dplyr::left_join(people, proposals |> dplyr::select(`solicitation id`, `proposal number`),by="proposal number", 
+                         relationship="many-to-many") |> 
+  dplyr::filter(!is.na("proposal number")) |> dplyr::distinct(`proposal number`, `member suid`)
 
 
 ## slightly munge colnames of people
