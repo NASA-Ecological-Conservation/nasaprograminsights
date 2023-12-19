@@ -16,7 +16,7 @@ make_nspires <- function(dir="nspires-data", # where is the internal data stored
                          ){
   
 # FOR DEV only
-N=200;tokeep=c("selected", "declined", "submitted","selectable","invited","awarded");removeppl=TRUE;returnclean=TRUE; dealwithspecialcases = TRUE;  addprogramname=TRUE
+# N=200;tokeep=c("selected", "declined", "submitted","selectable","invited","awarded");removeppl=TRUE;returnclean=TRUE; dealwithspecialcases = TRUE;  addprogramname=TRUE
 # light helper funs...
 not_any_na <- function(x) all(!is.na(x))
 not_all_na <- function(x) any(!is.na(x))
@@ -146,10 +146,12 @@ if(any(duplicated(colnames(people)))){
 }
 
 # Munge People Data -------------------------------------------------------
-## just ensure proposal status and proposal number are in df, since that's what theyre called in the propsoals df (above)
+## just ensure proposal status and proposal number are in df...
+## ...since that's what theyre called in the propsoals df (above)
 if(("proposal status" %in% names(people)) &
    ("status" %in% names(people)))
   people <- people |> dplyr::select(-'proposal status') |> dplyr::rename("proposal status" = "status")
+
 if (("proposal number" %in% names(people)) &
     ("response number" %in% names(people)))
   people <- people |> dplyr::select(-'proposal number') |> dplyr::rename('proposal number' = 'response number')
