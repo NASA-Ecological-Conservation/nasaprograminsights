@@ -7,15 +7,16 @@
 #' @param returnclean Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles, 
 #' @param addprogramname Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`. Note that some proposals/solicitations will not have a value for `program name` (i.e. NA).
 
-make_nspires <- function(dir="nspires-data", # where is the internal data stored
-                         N=200,
+make_nspires <- function(dir="nspires-data", # where is the internal data stored. This should be updated if you did not store your nspires data in top directory called this...
                          tokeep=c("selected", "declined", "submitted","selectable","invited","awarded"), 
                          removeppl=TRUE, 
                          returnclean=TRUE, 
-                         addprogramname=TRUE){
+                         addprogramname=TRUE,
+                         N=200
+                         ){
   
 # FOR DEV only
-# N=200;tokeep=c("selected", "declined", "submitted","selectable","invited","awarded");removeppl=TRUE;returnclean=TRUE; dealwithspecialcases = TRUE;  addprogramname=TRUE
+N=200;tokeep=c("selected", "declined", "submitted","selectable","invited","awarded");removeppl=TRUE;returnclean=TRUE; dealwithspecialcases = TRUE;  addprogramname=TRUE
 # light helper funs...
 not_any_na <- function(x) all(!is.na(x))
 not_all_na <- function(x) any(!is.na(x))
@@ -47,7 +48,7 @@ for(i in 1:round(length(propfns)/N)){
   if(high > length(propfns))high=length(propfns)
   tempfns <- propfns[low:high]
   # temp[[i]] <- lapply(tempfns, data.table::fread) |> ## fread keeps crashing even when ram use is very low...annoying 
-  temp[[i]] <- lapply(tempfns, read.csv) |> #, fileEncoding = "UTF-16LE") |> ## fread keeps crashing even when ram use is very low...annoying 
+  temp[[i]] <- lapply(tempfns, read.csv) |> #, fileEncoding = "UTF-16LE") |> ## fread crashes in this context even when ram use is very low...annoying 
     data.table::rbindlist(fill=TRUE)
   if(i == max(round(length(propfns) / N))) {
     #remove column if all fields == NA
@@ -88,8 +89,6 @@ rm(yy, letters, tochg)
 # "Decisions/05" # but maybe keep because thats how ASP mapper has it..
 # 2-step proposals
 # ecostres vs ecostress
-
-
 if ("sequence number" %in% colnames(proposals))
   proposals <- proposals |> dplyr::select(-`sequence number`)
 
@@ -154,6 +153,9 @@ if(("proposal status" %in% names(people)) &
 if (("proposal number" %in% names(people)) &
     ("response number" %in% names(people)))
   people <- people |> dplyr::select(-'proposal number') |> dplyr::rename('proposal number' = 'response number')
+
+if("response number" %in% names(people)) people <- people |> dplyr::rename("proposal number" = "response number")
+
 if(removeppl){
   people <- people |> dplyr::filter(`proposal number` %in% proposals$`proposal number`)
 }
