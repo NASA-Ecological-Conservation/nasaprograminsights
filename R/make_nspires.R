@@ -1,15 +1,15 @@
 #' @title Make a list of munged NSPIRES data using local data sources. 
 #' @export
 #' @param tokeep Character vector. Will keep only the proposals with proposal stus in those listed in the vector. IF NULL, will not remove any proposals.
-#' @param removeppl Logical. Default TRUE will keep ONLY the people who are associated with proposals in the data frame. FALSE will keep all people.
+#' @param removeextrappl Logical. Default TRUE will keep ONLY the people who are associated with proposals in the data frame. FALSE will keep all people.
 #' @param dir Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.
 #' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.
 #' @param returnclean Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles, 
 #' @param addprogramname Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`. Note that some proposals/solicitations will not have a value for `program name` (i.e. NA).
 
-make_nspires <- function(dir="nspires-data", # where is the internal data stored. This should be updated if you did not store your nspires data in top directory called this...
+make_nspires <- function(dir, # where is the internal data stored. This should be updated if you did not store your nspires data in top directory called this...
                          tokeep=c("selected", "declined", "submitted","selectable","invited","awarded"), 
-                         removeppl=TRUE, 
+                         removeextrappl=TRUE, 
                          returnclean=TRUE, 
                          addprogramname=TRUE,
                          N=200
@@ -59,7 +59,7 @@ for(i in 1:round(length(propfns)/N)){
 }
 print("...done importing proposals data.")
 
-# Munge some of the messy stuff in background ----
+# Do some messy munging of the NSPIRES data ----
 proposals <- munge.nspires.proposals(df=proposals) 
 
 # Add inferred or actual NRA number  -------------------------------------------------
@@ -85,7 +85,7 @@ proposals[tochg, "solicitation number"]<- paste0("NNH", yy, "ZDA001N-",letters)
 rm(yy, letters, tochg)
 
 
-#!!# HANDLE SPECIAL CASES
+# Handle special case issues ----------------------------------------------
 # "Decisions/05" # but maybe keep because thats how ASP mapper has it..
 # 2-step proposals
 # ecostres vs ecostress
@@ -95,7 +95,8 @@ if ("sequence number" %in% colnames(proposals))
 # organize columns for easy use
 proposals <- proposals |> dplyr::relocate("solicitation number", "solicitation id", "proposal number")
 
-# Troubleshooting ---------------------------------------------------------
+# For dev: do some troubleshooting ---------------------------------------------------------
+## need to move to test
 temp <- lookup |> dplyr::filter(`was solicited`  %in% c( TRUE, NA)); 
 tofix=temp$`solicitation number`[which(!temp$`solicitation number` %in%  proposals$`solicitation number`)]#not in the proposals dataframe or is incorrectly mapped
 x=allfns[sort(unlist(lapply(X =tofix, FUN= function(x){grepl(x, allfns) |> which()})))]
@@ -131,7 +132,7 @@ print("adding program name ")
     dplyr::relocate("program name")
   
   stopifnot("program name" %in% tolower(colnames(proposals)))
-  }
+  }else(message("addprogramname==FALSE, data output will not include a program name variable."))
 
 # Import People Data --------------------------------------------
 # i should probably move out of data.table
@@ -158,16 +159,22 @@ if (("proposal number" %in% names(people)) &
 
 if("response number" %in% names(people)) people <- people |> dplyr::rename("proposal number" = "response number")
 
-if(removeppl){
+if(removeextrappl){
+  ## remove the people for whom we don't have proposals, stragglers, i guess, or issues in data storage...
   people <- people |> dplyr::filter(`proposal number` %in% proposals$`proposal number`)
 }
 
 # people$'proposal number'[which(!people$`proposal number` %in% proposals$`proposal number`)] ## THIS SHOUDL BE ZERO...
 
-# add solicitation id to people
-people <- dplyr::left_join(people, proposals |> dplyr::select(`solicitation id`, `proposal number`),by="proposal number", 
-                         relationship="many-to-many") |> 
-  dplyr::filter(!is.na("proposal number")) |> dplyr::distinct(`proposal number`, `member suid`)
+# add solicitation id to people data frame
+people <-
+  dplyr::inner_join(
+    people,
+    proposals |> dplyr::select(`solicitation id`, `proposal number`, `program name`),
+    by = c("proposal number"),
+    relationship = "many-to-many"
+  ) |>
+  dplyr::filter(!is.na("proposal number")) |> dplyr::distinct(`proposal number`, `member suid`, .keep_all = TRUE) 
 
 
 ## slightly munge colnames of people

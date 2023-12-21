@@ -28,7 +28,7 @@ dir <-
 nspires <-
   make_nspires(
     dir,
-    removeppl = TRUE,
+    removeppl = FALSE,
     tokeep = c(
       "selected",
       "declined",
