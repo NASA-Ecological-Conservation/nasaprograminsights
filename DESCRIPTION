@@ -13,7 +13,7 @@ Author:
            role = "aut",
            comment = c(ORCID = "0009-0007-5407-2009"))
 Maintainer: Jessica Burnett <jessica.burnett@nasa.gov>
-Description: A package for munging NSPIRES data to generate simple statistics. 
+Description: A package for NASA personnel to munge, generate simple statistics, visualizations, and summaries of NSPIRES data.   
 License: CC0
 Encoding: UTF-8
 LazyData: true
