@@ -35,12 +35,13 @@ print_proposal_count <- function(props, filtered_props) {
 #' The following information is printed for both all proposals and filtered proposals:\n
 #' 1. The total amount awarded by NASA to selected proposals\n
 #' 2. The average amount per proposal awarded by NASA to selected proposals
+#' @keywords internal
 print_proposal_award_amount <- function(props, filtered_props) {
-  paste0(
+  paste0(## wish list activity: export dollar amounts as MILLIONS, rounding to 2 if Millions, e.g., print("$0.56M", "$2.60M")
     "<h5>All Programs Proposal Award Amount Statistics</h5>The total amount awarded by NASA to selected Earth Action proposals between 2006-2022 was $", sum(props[props$`proposal status` == "SELECTED", ]$`proposed amount total`, na.rm = TRUE),
-    ".<br>The average amount per proposal awarded by NASA to selected Earth Action proposals during this time was $", round(mean(props[props$`proposal status` == "SELECTED", ]$`proposed amount total`, na.rm = TRUE), 2),
+    ".<br>The average amount per proposal awarded by NASA to selected Earth Action proposals during this time was $", round(mean(props[props$`proposal status` == "SELECTED", ]$`proposed amount total`, na.rm = TRUE), 0),
     "<br><br><h5>Filtered Programs Proposal Award Statistics</h5>The total amount awarded by NASA to selected filtered program proposals between 2006-2022 was $", sum(filtered_props[filtered_props$`proposal status` == "SELECTED", ]$`proposed amount total`, na.rm = TRUE),
-    ".<br>The average amount per proposal awarded by NASA to selected filtered program proposals during this time was $", round(mean(filtered_props[filtered_props$`proposal status` == "SELECTED", ]$`proposed amount total`, na.rm = TRUE), 2), ".<br><br>"
+    ".<br>The average amount per proposal awarded by NASA to selected filtered program proposals during this time was $", round(mean(filtered_props[filtered_props$`proposal status` == "SELECTED", ]$`proposed amount total`, na.rm = TRUE), 0), ".<br><br>"
   )
 }
 
@@ -53,7 +54,8 @@ print_proposal_award_amount <- function(props, filtered_props) {
 #' @param filtered_ppl data frame containing only people from filtered programs
 #' @returns A concatenated string to be printed in the Proposal Analysis tab when the `PI and member participation` option is selected in the view drop down.
 #' @usage print_pi(data.frame(nspires$proposals), data.frame(nspires$people), data.frame(nspires$proposals[nspires$proposals$`program name` %in% filtered_programs(), ]), data.frame(nspires$people[nspires$people$`program name` %in% filtered_programs(), ]))
-#' @details
+#' @keywords internal
+#' @details 
 #' The following information is printed for both all proposals and filtered proposals:\n
 #' 1. Number of PIs who submitted a proposal\n
 #' 2. Number of PIs who had a selected proposal\n
@@ -68,11 +70,12 @@ print_proposal_award_amount <- function(props, filtered_props) {
 #' 11. The average selection percentage for PIs who submitted multiple times
 print_pi <- function(props, ppl, filtered_props, filtered_ppl) {
   pis <- get_pi_df(props)
-  multiple_apps <- pis[pis$`submission.count` > 1, ]
+  multiple_apps <- pis[pis$`submission.count` > 1,]
   num_props <- length(unique(ppl$`proposal.number`))
-  ppl_selected <- ppl[ppl$`status` == "SELECTED", ]
-  num_selected_props <- length(unique(ppl_selected$`proposal.number`))
-  selected_props <- props[props$`proposal.status` == "SELECTED", ]
+  ppl_selected <- ppl[ppl$`status` == "SELECTED",]
+  num_selected_props <-
+    length(unique(ppl_selected$`proposal.number`))
+  selected_props <- props[props$`proposal.status` == "SELECTED",]
   num_pis <- length(unique(ppl$`pi.suid`))
   num_members <- length(unique(ppl$`member.suid`))
   num_multiple <- length(unique(multiple_apps$`pi.suid`))
@@ -82,56 +85,110 @@ print_pi <- function(props, ppl, filtered_props, filtered_ppl) {
   if (nrow(filtered_props) == 0) {
     paste0(
       "<h5>All Programs PI and Member Statistics</h5>",
-      num_pis, " PIs submitted proposals.<br>",
-      length(unique(ppl_selected$`pi.suid`)), " PIs were selected.<br>",
-      num_members, " members were listed on submitted proposals.<br>On average, each submitted proposal had ", 
-      ceiling(length(ppl$`member.suid`) / length(table(ppl$`pi.suid`))), " members on the team.<br>",
-      length(unique(ppl_selected$`member.suid`)), " members were listed on selected proposals.<br>On average, each selected proposal had ", 
-      ceiling(length(ppl_selected$`member.suid`) / num_selected_props), " members on the team.<br>The average selection percentage for PIs (number of selections/number of submission for each PI) was ",
-      round(mean(pis$selection.percentage), 0), "%.<br><br>",
-      num_multiple, " PIs submitted multiple proposals.<br>",
-      round(num_multiple / num_pis * 100, 0), "% of PIs submitted a proposal multiple times.<br>",
-      nrow(multiple_apps[multiple_apps$`selection.count` > 0, ]), " PIs were selected multiple times.<br>Out of PIs who submitted multiple times, ",
-      round(nrow(multiple_apps[multiple_apps$`selection.count` > 0, ]) / nrow(multiple_apps) * 100, 0), "% were selected at once. <br>The average selection percentage for PIs who submitted multiple times was ",
-      round(mean(multiple_apps$selection.percentage), 0), "%.<br><br>"
+      num_pis,
+      " PIs submitted proposals.<br>",
+      length(unique(ppl_selected$`pi.suid`)),
+      " PIs were selected.<br>",
+      num_members,
+      " members were listed on submitted proposals.<br>On average, each submitted proposal had ",
+      ceiling(length(ppl$`member.suid`) / length(table(ppl$`pi.suid`))),
+      " members on the team.<br>",
+      length(unique(ppl_selected$`member.suid`)),
+      " members were listed on selected proposals.<br>On average, each selected proposal had ",
+      ceiling(length(ppl_selected$`member.suid`) / num_selected_props),
+      " members on the team.<br>The average selection percentage for PIs (number of selections/number of submission for each PI) was ",
+      round(mean(pis$selection.percentage), 0),
+      "%.<br><br>",
+      num_multiple,
+      " PIs submitted multiple proposals.<br>",
+      round(num_multiple / num_pis * 100, 0),
+      "% of PIs submitted a proposal multiple times.<br>",
+      nrow(multiple_apps[multiple_apps$`selection.count` > 0,]),
+      " PIs were selected multiple times.<br>Out of PIs who submitted multiple times, ",
+      round(nrow(multiple_apps[multiple_apps$`selection.count` > 0,]) / nrow(multiple_apps) * 100, 0),
+      "% were selected at once. <br>The average selection percentage for PIs who submitted multiple times was ",
+      round(mean(multiple_apps$selection.percentage), 0),
+      "%.<br><br>"
     )
   } else {
     filtered_pis <- get_pi_df(filtered_props)
-    filtered_multiple_apps <- filtered_pis[filtered_pis$`submission.count` > 1, ]
-    filtered_num_props <- length(unique(filtered_ppl$`proposal.number`))
-    filtered_ppl_selected <- filtered_ppl[filtered_ppl$`status` == "SELECTED", ]
-    filtered_num_selected_props <- length(unique(filtered_ppl_selected$`proposal.number`))
-    filtered_selected_props <- filtered_props[filtered_props$`proposal.status` == "SELECTED", ]
+    filtered_multiple_apps <-
+      filtered_pis[filtered_pis$`submission.count` > 1,]
+    filtered_num_props <-
+      length(unique(filtered_ppl$`proposal.number`))
+    filtered_ppl_selected <-
+      filtered_ppl[filtered_ppl$`status` == "SELECTED",]
+    filtered_num_selected_props <-
+      length(unique(filtered_ppl_selected$`proposal.number`))
+    filtered_selected_props <-
+      filtered_props[filtered_props$`proposal.status` == "SELECTED",]
     filtered_num_pis <- length(unique(filtered_ppl$`pi.suid`))
-    filtered_num_members <- length(unique(filtered_ppl$`member.suid`))
-    filtered_num_multiple <- length(unique(filtered_multiple_apps$`pi.suid`))
+    filtered_num_members <-
+      length(unique(filtered_ppl$`member.suid`))
+    filtered_num_multiple <-
+      length(unique(filtered_multiple_apps$`pi.suid`))
     paste0(
       "<h5>All Programs PI and Member Statistics</h5>",
-      num_pis, " PIs submitted proposals.<br>",
-      length(unique(ppl_selected$`pi.suid`)), " PIs were selected.<br>",
-      num_members, " members were listed on submitted proposals.<br>On average, each submitted proposal had ", 
-      ceiling(length(ppl$`member.suid`) / length(table(ppl$`pi.suid`))), " members on the team.<br>",
-      length(unique(ppl_selected$`member.suid`)), " members were listed on selected proposals.<br>On average, each selected proposal had ", 
-      ceiling(length(ppl_selected$`member.suid`) / num_selected_props), " members on the team.<br>The average selection percentage for PIs (number of selections/number of submission for each PI) was ",
-      round(mean(pis$selection.percentage), 0), "%.<br><br>",
-      num_multiple, " PIs submitted multiple proposals.<br>Out of all PIs who submitted a proposal, ",
-      round(num_multiple / num_pis * 100, 0), "% of PIs submitted a proposal multiple times.<br>",
-      nrow(multiple_apps[multiple_apps$`selection.count` > 0, ]), " PIs were selected multiple times.<br>Out of PIs who submitted multiple times, ",
-      round(nrow(multiple_apps[multiple_apps$`selection.count` > 0, ]) / nrow(multiple_apps) * 100, 0), "% were selected at once. <br>The average selection percentage for PIs who submitted multiple times was ",
-      round(mean(multiple_apps$selection.percentage), 0), "%.<br><br><h5>Filtered Programs PI and Member Statistics</h5>",
+      num_pis,
+      " PIs submitted proposals.<br>",
+      length(unique(ppl_selected$`pi.suid`)),
+      " PIs were selected.<br>",
+      num_members,
+      " members were listed on submitted proposals.<br>On average, each submitted proposal had ",
+      ceiling(length(ppl$`member.suid`) / length(table(ppl$`pi.suid`))),
+      " members on the team.<br>",
+      length(unique(ppl_selected$`member.suid`)),
+      " members were listed on selected proposals.<br>On average, each selected proposal had ",
+      ceiling(length(ppl_selected$`member.suid`) / num_selected_props),
+      " members on the team.<br>The average selection percentage for PIs (number of selections/number of submission for each PI) was ",
+      round(mean(pis$selection.percentage), 0),
+      "%.<br><br>",
+      num_multiple,
+      " PIs submitted multiple proposals.<br>Out of all PIs who submitted a proposal, ",
+      round(num_multiple / num_pis * 100, 0),
+      "% of PIs submitted a proposal multiple times.<br>",
+      nrow(multiple_apps[multiple_apps$`selection.count` > 0,]),
+      " PIs were selected multiple times.<br>Out of PIs who submitted multiple times, ",
+      round(nrow(multiple_apps[multiple_apps$`selection.count` > 0,]) / nrow(multiple_apps) * 100, 0),
+      "% were selected at once. <br>The average selection percentage for PIs who submitted multiple times was ",
+      round(mean(multiple_apps$selection.percentage), 0),
+      "%.<br><br><h5>Filtered Programs PI and Member Statistics</h5>",
       
-      filtered_num_pis, " PIs submitted filtered proposals.<br>",
-      length(unique(filtered_ppl_selected$`pi.suid`)), " PIs who submitted filtered proposals were selected.<br>",
-      filtered_num_members, " members were listed on submitted proposals.<br>On average, each submitted proposal had ", 
-      ceiling(length(filtered_ppl$`member.suid`) / length(table(filtered_ppl$`pi.suid`))), " members on the team.<br>",
-      length(unique(filtered_ppl_selected$`member.suid`)), " members were listed on selected proposals.<br>On average, each selected proposal had ", 
-      ceiling(length(filtered_ppl_selected$`member.suid`) / filtered_num_selected_props), " members on the team.<br>The average selection percentage for PIs (number of selections/number of submission for each PI) was ",
-      round(mean(filtered_pis$selection.percentage), 0), "%.<br><br>",
-      filtered_num_multiple, " PIs submitted multiple proposals.<br>Out of all PIs who submitted a proposal, ",
-      round(filtered_num_multiple / filtered_num_pis * 100, 0), "% of PIs submitted a proposal multiple times.<br>",
-      nrow(filtered_multiple_apps[filtered_multiple_apps$`selection.count` > 0, ]), " PIs were selected multiple times.<br>Out of PIs who submitted multiple times, ",
-      round(nrow(filtered_multiple_apps[filtered_multiple_apps$`selection.count` > 0, ]) / nrow(filtered_multiple_apps) * 100, 0), "% were selected at once. <br>The average selection percentage for PIs who submitted multiple times was ",
-      round(mean(filtered_multiple_apps$selection.percentage), 0), "%.<br><br>"
+      filtered_num_pis,
+      " PIs submitted filtered proposals.<br>",
+      length(unique(filtered_ppl_selected$`pi.suid`)),
+      " PIs who submitted filtered proposals were selected.<br>",
+      filtered_num_members,
+      " members were listed on submitted proposals.<br>On average, each submitted proposal had ",
+      ceiling(length(filtered_ppl$`member.suid`) / length(table(
+        filtered_ppl$`pi.suid`
+      ))),
+      " members on the team.<br>",
+      length(unique(
+        filtered_ppl_selected$`member.suid`
+      )),
+      " members were listed on selected proposals.<br>On average, each selected proposal had ",
+      ceiling(
+        length(filtered_ppl_selected$`member.suid`) / filtered_num_selected_props
+      ),
+      " members on the team.<br>The average selection percentage for PIs (number of selections/number of submission for each PI) was ",
+      round(mean(filtered_pis$selection.percentage), 0),
+      "%.<br><br>",
+      filtered_num_multiple,
+      " PIs submitted multiple proposals.<br>Out of all PIs who submitted a proposal, ",
+      round(filtered_num_multiple / filtered_num_pis * 100, 0),
+      "% of PIs submitted a proposal multiple times.<br>",
+      nrow(filtered_multiple_apps[filtered_multiple_apps$`selection.count` > 0,]),
+      " PIs were selected multiple times.<br>Out of PIs who submitted multiple times, ",
+      round(
+        nrow(filtered_multiple_apps[filtered_multiple_apps$`selection.count` > 0,]) / nrow(filtered_multiple_apps) * 100,
+        0
+      ),
+      "% were selected at once. <br>The average selection percentage for PIs who submitted multiple times was ",
+      round(mean(
+        filtered_multiple_apps$selection.percentage
+      ), 0),
+      "%.<br><br>"
     )
   }
 }
@@ -151,6 +208,7 @@ print_pi <- function(props, ppl, filtered_props, filtered_ppl) {
 #' 4. Percentage of organizations who submitted a proposal multiple times\n
 #' 5. Number of organizations who were selected multiple times\n
 #' 5. Percentage of organizations selected multiple times
+#' @keywords internal
 print_org <- function(props, filtered_props) {
   orgs <- get_org_df(props)
   multiple_apps <- orgs[orgs$submission.count > 1, ]
@@ -205,6 +263,7 @@ print_org <- function(props, filtered_props) {
 #' 6. Percentage of submitted proposals with international participation\n
 #' 7. Number of selected proposals with international participation\n
 #' 8. Percentage of selected proposals with international participation\n
+#' @keywords internal
 print_participation <- function(props, filtered_props) {
   selected_props <- props[props$`proposal status` == "SELECTED", ]
   international_submitted <- nrow(props[props$`international participation` == "true", ])

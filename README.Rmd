@@ -28,7 +28,7 @@ dir <-
 nspires <-
   make_nspires(
     dir,
-    removeppl = FALSE,
+    removeextrappl = FALSE,
     tokeep = c(
       "selected",
       "declined",
@@ -43,6 +43,10 @@ nspires <-
 ##    lookup table to link program names and NOFOs
 ##    people: people listed on proposals
 ##    proposals: information regarding individual proposals
+```
+Run the R Shiny GUI to interact with NSPIRES data. You must specify the location (directory) of the NSPIRES data (argument is `data`).
+```{r shiny-app, eval=FALSE}
+nasaprograminsights::runapp(data = nspires, removeNonEA = TRUE)
 ```
 
 ```{r inspect-data, eval=FALSE}

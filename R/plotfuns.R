@@ -16,7 +16,10 @@ cb_palette8 <- c("#1a85ff", "#d41159")
 #' @param metric string specifying what the program names should be plotted by
 #' @param plot_title string specifying the title of the plot
 #' @returns A plotly object to be printed in the Proposal Analysis tab.
+#' @importFrom plotly plot_ly 
+#' @importFrom tidyr gather
 #' @usage plot_program_name(nspires$proposals[nspires$proposals$`program name` %in% filtered_programs(), ], nspires$proposals[!nspires$proposals$`program name` %in% filtered_programs(), ], "international", "Submitted Proposal Int'l Participation by Program Name")
+#' @keywords internal
 #' @details
 #' The following metrics can be passed into `plot_program_name`:\n
 #' 1. "solicitation id"\n
@@ -30,6 +33,7 @@ cb_palette8 <- c("#1a85ff", "#d41159")
 plot_program_name <- function(df1, df2, metric, plot_title) {
   # Count unique solicitation ids per program name for each data frame
   x_axis <- ""
+  ## wish list--fix this entire if else bulk to be one or two funs.
   if (metric == "solicitation id") {
     df1_counts <- df1 |> group_by(`program name`) |> summarize(Filtered_Programs = n_distinct(`solicitation id`))
     df2_counts <- df2 |> group_by(`program name`) |> summarize(Other_Programs = n_distinct(`solicitation id`))
@@ -60,14 +64,14 @@ plot_program_name <- function(df1, df2, metric, plot_title) {
   # Replace missing counts with 0 
   merged_df[is.na(merged_df)] <- 0
   # Reshape the data for plotting
-  plot_df <- tidyr::gather(merged_df, "Dataframe", "Count", -`program name`)
+  plot_df <- tidyr::gather(merged_df, "Dataframe", "Count", -`program name`) ### might need to change to pivot_X
   # Create the bar plot
-  plot <- plot_ly(plot_df, x = ~Count, y = ~`program name`, color = ~Dataframe, type = 'bar', colors = cb_palette8) |>
+  plot <- plotly::plot_ly(plot_df, x = ~Count, y = ~`program name`, color = ~Dataframe, type = 'bar', colors = cb_palette8) |>
     layout(title = plot_title, xaxis = list(title = 'Count'), yaxis = list(title = 'Program Name'))
   return(plot)
 }
 
-#' @title Plot Pie Plot by Program Name
+#' @title Create a Pie Chart by Program Name
 #' @description
 #' Function plotting a pie plot grouping a given data frame by program name by a passed in metric. Compares filtered program names to other program names.
 #' @param df1 data frame containing filtered proposals
@@ -75,6 +79,7 @@ plot_program_name <- function(df1, df2, metric, plot_title) {
 #' @param metric string specifying what the program names should be plotted by
 #' @param plot_title string specifying the title of the plot
 #' @returns A plotly object to be printed in the Proposal Analysis tab.
+#' @keywords internal
 #' @usage plot_program_name(nspires$proposals[nspires$proposals$`program name` %in% filtered_programs(), ], nspires$proposals[!nspires$proposals$`program name` %in% filtered_programs(), ], "international", "Submitted Proposal Int'l Participation by Program Name")
 #' @details
 #' The following metrics can be passed into `plot_program_name`:\n
