@@ -15,7 +15,8 @@ analysisUI <- function() {
 #' @usage
 #' tabPanel("Program Analysis", analysis_intro())
 analysis_intro <- function() {
-  HTML(r"(
+  HTML(
+    r"(
           <br>
           <h1>Program Analysis</h1>
           <p>This tab summarizes all NASA Earth Action program investments between 2006-2022. </p>
@@ -28,7 +29,8 @@ analysis_intro <- function() {
             <li>Linked organizations</li>
             <li>Proposal participation</li>
           </ol>
-          )")
+          )"
+  )
 }
 
 #' @title Program Analysis Drop Down and Plots UI
@@ -36,8 +38,14 @@ analysis_intro <- function() {
 #' Output drop down menu for user to select a metric to view and the associated calculations and plots for the metric.
 #' @usage
 #' tabPanel("Introduction & Setup", analysis_dropdown())
+# Can change name of metrics in dropdown here
+metric1 <- "Solicitations & Proposals"
+metric2 <- "Award Amount Summaries"
+metric3 <- "PI & Member Participation"
+metric4 <- "Linked organizations"
+metric5 <- "Proposal participation"
 analysis_dropdown <- function() {
-  metrics <- c("Proposal count", "Proposal award amount", "PI and member participation", "Linked organizations", "Proposal participation")
+  metrics <- c(metric1, metric2, metric3, metric4, metric5)
   fluidPage (
     selectInput("all_dropdown", "Select a view", metrics),
     htmlOutput("all_result"),
