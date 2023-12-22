@@ -21,14 +21,14 @@ cb_palette8 <- c("#1a85ff", "#d41159")
 #' @usage plot_program_name(nspires$proposals[nspires$proposals$`program name` %in% filtered_programs(), ], nspires$proposals[!nspires$proposals$`program name` %in% filtered_programs(), ], "international", "Submitted Proposal Int'l Participation by Program Name")
 #' @keywords internal
 #' @details
-#' The following metrics can be passed into `plot_program_name`:\n
-#' 1. "solicitation id"\n
-#' 2. "proposal count"\n
-#' 3. "selection percentage"\n
-#' 4. "total proposed award amount"\n
-#' 5. "average proposed award amount"\n
-#' 6. "pi"\n
-#' 7. "international"\n
+#' The following metrics can be passed into `plot_program_name`:
+#' 1. "solicitation id"
+#' 2. "proposal count"
+#' 3. "selection percentage"
+#' 4. "total proposed award amount"
+#' 5. "average proposed award amount"
+#' 6. "pi"
+#' 7. "international"
 #' 8. "nasa"
 plot_program_name <- function(df1, df2, metric, plot_title) {
   # Count unique solicitation ids per program name for each data frame
@@ -82,8 +82,8 @@ plot_program_name <- function(df1, df2, metric, plot_title) {
 #' @keywords internal
 #' @usage plot_program_name(nspires$proposals[nspires$proposals$`program name` %in% filtered_programs(), ], nspires$proposals[!nspires$proposals$`program name` %in% filtered_programs(), ], "international", "Submitted Proposal Int'l Participation by Program Name")
 #' @details
-#' The following metrics can be passed into `plot_program_name`:\n
-#' 1. "proposed award amount"\n
+#' The following metrics can be passed into `plot_program_name`:
+#' 1. "proposed award amount"
 #' 2. "pi count"
 plot_pie <- function(df1, df2, metric, plot_title) {
   if (metric == "proposed award amount") {
@@ -99,5 +99,24 @@ plot_pie <- function(df1, df2, metric, plot_title) {
                   textinfo = "label+percent",
                   marker = list(colors = cb_palette8)) |>
     layout(title = plot_title, showlegend = TRUE)
+  return(plot)
+}
+
+#' @title Plot a Histogram Showing Linked Org Frequencies
+#' @description
+#' Function plotting a histogram displaying the frequencies of the top n linked orgs appearing in the passed in data frame.
+#' @param df data frame containing proposals
+#' @param n numeric specifying how many linked orgs should be plotted
+#' @param plot_title string specifying the title of the plot
+#' @returns A plotly object to be printed in the Proposal Analysis tab.
+#' @keywords internal
+#' @usage plot_hist(data$proposals, 20, "Linked Org Frequency in Earth Action Submissions")
+plot_hist <- function(df, n, plot_title) {
+  value_counts <- table(df$`linked org`)
+  top_values <- names(sort(value_counts, decreasing = TRUE)[1:n])
+  df_top <- df[df$`linked org` %in% top_values, ]
+  df_top$`linked org` <- factor(df_top$`linked org`, levels = (top_values))
+  plot <- plot_ly(df_top, x = ~`linked org`, type = "histogram") |> 
+  layout(title = plot_title)
   return(plot)
 }
