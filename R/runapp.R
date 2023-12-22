@@ -4,7 +4,7 @@
 #' @param data NPSIRES data frame containing data about Earth Action proposals and people
 #' @param removeNonEA logical value that determines whether proposals not belonging to an Earth Action program will be ignored
 #' @usage
-#' nspires = make_nspires("local file directory with NSPIRES proposals")\n
+#' nspires = make_nspires("local file directory with NSPIRES proposals")
 #' runapp(data = nspires, removeNonEA = TRUE)
 #' @export
 runapp <- function(data = NULL, removeNonEA = TRUE) {
