@@ -49,11 +49,10 @@ Run the R Shiny GUI to interact with NSPIRES data. You must specify the location
 nasaprograminsights::runapp(data = nspires, removeNonEA = TRUE)
 ```
 
-```{r inspect-data, eval=FALSE}
-# Inspect Data ------------------------------------------------------------
-# here is a list of programs. note that not all solicitations are assigned a program.
-(programs <- sort(unique(nspires$lookup$`program name`))
- # here is a list of the programs for which we have proposal data:
-# nspires$proposals[!nspires$proposals$`solicitation id` %in% nspires$lookup$`solciitation id`,] 
-```
-  
+<!-- ```{r inspect-data, eval=FALSE} -->
+<!-- # Inspect Data ------------------------------------------------------------ -->
+<!-- # here is a list of programs. note that not all solicitations are assigned a program. -->
+<!-- (programs <- sort(unique(nspires$lookup$`program name`)) -->
+<!--  # here is a list of the programs for which we have proposal data: -->
+<!-- # nspires$proposals[!nspires$proposals$`solicitation id` %in% nspires$lookup$`solciitation id`,]  -->
+<!-- ``` -->

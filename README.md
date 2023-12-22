@@ -16,7 +16,7 @@ dir <-
 nspires <-
   make_nspires(
     dir,
-    removeppl = TRUE,
+    removeextrappl = FALSE,
     tokeep = c(
       "selected",
       "declined",
@@ -33,10 +33,17 @@ nspires <-
 ##    proposals: information regarding individual proposals
 ```
 
+Run the R Shiny GUI to interact with NSPIRES data. You must specify the
+location (directory) of the NSPIRES data (argument is `data`).
+
 ``` r
-# Inspect Data ------------------------------------------------------------
-# here is a list of programs. note that not all solicitations are assigned a program.
-(programs <- sort(unique(nspires$lookup$`program name`))
- # here is a list of the programs for which we have proposal data:
-# nspires$proposals[!nspires$proposals$`solicitation id` %in% nspires$lookup$`solciitation id`,] 
+nasaprograminsights::runapp(data = nspires, removeNonEA = TRUE)
 ```
+
+<!-- ```{r inspect-data, eval=FALSE} -->
+<!-- # Inspect Data ------------------------------------------------------------ -->
+<!-- # here is a list of programs. note that not all solicitations are assigned a program. -->
+<!-- (programs <- sort(unique(nspires$lookup$`program name`)) -->
+<!--  # here is a list of the programs for which we have proposal data: -->
+<!-- # nspires$proposals[!nspires$proposals$`solicitation id` %in% nspires$lookup$`solciitation id`,]  -->
+<!-- ``` -->
