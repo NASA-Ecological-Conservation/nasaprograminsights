@@ -23,7 +23,6 @@ Imports:
     dplyr,
     ggplot2 (>= 3.4.4),
     here (>= 1.0.1),
-    nasaprograminsights,
     plotly,
     readr,
     shiny,
