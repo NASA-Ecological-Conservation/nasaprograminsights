@@ -58,9 +58,6 @@ add.cesu.tag <- function(dat.nspires, cesu=nasaprograminsights::cesu) {
   nasa.cesu <-
     cesu[cesu$funder == "National Aeronautics and Space Administration", ]
 
-    # dat.nspires$`pi company name` <-
-  #   toupper(dat.nspires$`pi company name`)
-
   # add index tos kip any NA or blank compnay names
   is.blank <- which(dat.nspires$`pi company name` %in% c("NA", NA, "N/A", ""))
   
@@ -71,12 +68,12 @@ add.cesu.tag <- function(dat.nspires, cesu=nasaprograminsights::cesu) {
     if(i %in% is.blank) next()
     
     ## for cesus that nasa is already in
-   if(any(grepl(tolower(dat.nspires$`pi company name`[i]), x=nasa.cesu$member))){
+   if(any(grepl(tolower(dat.nspires$`pi company name`[i]), x=tolower(nasa.cesu$member)))){
      dat.nspires$nasa.member.cesu[i]=TRUE
    }
     
     ## for all cesu members
-    if(any(grepl(tolower(dat.nspires$`pi company name`[i]), x=cesu$member))){
+    if(any(grepl(tolower(dat.nspires$`pi company name`[i]), x=tolower(cesu$member)))){
       dat.nspires$member.cesu[i]=TRUE
     }
     
