@@ -4,7 +4,7 @@
 #' @param removeextrappl Logical. Default TRUE will keep ONLY the people who are associated with proposals in the data frame. FALSE will keep all people.
 #' @param dir Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.
 #' @param N Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.
-#' @param returnclean Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles, 
+#' @param returnclean Logical. Default TRUE will return the "people" data frame (list element) with reduced information Columns removed include related proposal Titles, 
 #' @param addprogramname Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`. Note that some proposals/solicitations will not have a value for `program name` (i.e. NA).
 
 make_nspires <- function(dir, # where is the internal data stored. This should be updated if you did not store your nspires data in top directory called this...
@@ -15,7 +15,9 @@ make_nspires <- function(dir, # where is the internal data stored. This should b
                          N=200
                          ){
   
-# FOR DEV only
+stopifnot(all(tolower(tokeep) %in% c("selected", "declined", "submitted","selectable","invited","awarded")))
+
+  # FOR DEV only
 # N=200;tokeep=c("selected", "declined", "submitted","selectable","invited","awarded");removeppl=TRUE;returnclean=TRUE; dealwithspecialcases = TRUE;  addprogramname=TRUE
 # light helper funs...
 not_any_na <- function(x) all(!is.na(x))
@@ -38,28 +40,46 @@ aorfns  <- allpropfns[grepl(x = allpropfns, pattern = "aor", ignore.case = TRUE)
 ## therefore, i've created a loop to pull in N fns at a time
 
 proposals <- NULL
-for(i in 1:round(length(propfns)/N)){
+niter=max(round(length(propfns)/N),1) # in the event this is 0, we need to handle that. thats why its not indexing the loops
+for(i in 1:niter){
   if(i==1){ temp <- proposals <- NULL;
   print(paste("Importing proposals data from local machine... (ignore the 'embedded nul(s) warning for now...)"))
   }else{print(paste("Importing proposals data from local machine..."))}
   if(i==10) print("still importing, hold your horses!")
-  low <- i*N-N
+  
+  if(i==1) low <- i*N-N 
+  if(i!=1) low <- 1 
   high <- i*N
-  if(high > length(propfns))high=length(propfns)
+  if(high > length(propfns)|high == 0) high=length(propfns)
   tempfns <- propfns[low:high]
   # temp[[i]] <- lapply(tempfns, data.table::fread) |> ## fread keeps crashing even when ram use is very low...annoying 
   temp[[i]] <- lapply(tempfns, read.csv) |> #, fileEncoding = "UTF-16LE") |> ## fread crashes in this context even when ram use is very low...annoying 
-    data.table::rbindlist(fill=TRUE)
-  if(i == max(round(length(propfns) / N))) {
+    data.table::rbindlist(fill=TRUE) 
+  temp[[i]] <- temp[[i]][which(!is.na(temp[[i]]$Proposal.Number )),] 
+  
+  ## on the last loop, combine rows and remove duplicates.
+  if(i == niter) {
     #remove column if all fields == NA
     # remove duplicate rows (incase of duplicate files)
-    proposals <- data.table::rbindlist(temp, fill = TRUE) |> dplyr::select_if(not_all_na) |> dplyr::distinct() 
+    proposals <-
+      data.table::rbindlist(temp, fill = TRUE) |> 
+      dplyr::select_if(not_all_na) |> 
+      dplyr::filter(!is.na(Proposal.Status)) |> 
+      dplyr::distinct() 
+    # If indicated, filter the proposals using tokeep
+    if(!is.null(tokeep)){
+      print("filtering proposals to include only proposals that were:");print(tokeep)
+      proposals <- proposals |> 
+        dplyr::filter(tolower(Proposal.Status) %in% tolower(tokeep))
+    }
+    
+    print("...done importing proposals data...now to munge...")
     rm(temp, low, high, i)
   }
 }
-print("...done importing proposals data.")
 
-# Do some messy munging of the NSPIRES data ----
+
+# Do some messy munging of the NSPIRES data -----------------------------------------
 proposals <- munge.nspires.proposals(df=proposals) 
 
 # Add inferred or actual NRA number  -------------------------------------------------
@@ -74,15 +94,15 @@ for(i in seq_along(toadd)){ # shoudl reduce for comp time.
 }
 rm(toinfer, toadd)
 
-tochg=which(is.na(proposals$`solicitation number`))
-proposals[tochg, "solicitation number"] <- substr(x = proposals[tochg, "solicitation id"],
-              start = 1,
-              stop = nchar(proposals[tochg, "solicitation id"]) - 2)
+# tochg=which(is.na(proposals$`solicitation number`))
+# proposals[tochg, "solicitation number"] <- substr(x = proposals[tochg, "solicitation id"],
+#               start = 1,
+#               stop = nchar(proposals[tochg, "solicitation id"]) - 2)
 
-letters=stringr::str_extract(proposals[tochg, "solicitation number"], "(?<=-).*")
-yy=stringr::str_extract(proposals[tochg, "solicitation number"], "[0-9]+")
-proposals[tochg, "solicitation number"]<- paste0("NNH", yy, "ZDA001N-",letters)
-rm(yy, letters, tochg)
+# letters=stringr::str_extract(proposals[tochg, "solicitation number"], "(?<=-).*")
+# yy=stringr::str_extract(proposals[tochg, "solicitation number"], "[0-9]+")
+# proposals[tochg, "solicitation number"]<- paste0("NNH", yy, "ZDA001N-",letters)
+# rm(yy, letters, tochg)
 
 
 # Handle special case issues ----------------------------------------------
@@ -109,15 +129,6 @@ if(length(y > 0))
   )
 rm(temp, tofix,x,y)
 
-
-# Filter Proposals --------------------------------------------------------
-# If indicated, filter the proposals using tokeep
-if(!is.null(tokeep)){
-  print("Filtering proposals to include only:")
-  print(tokeep)
-  proposals <- proposals |> 
-    dplyr::filter(tolower(`proposal status`) %in% tolower(tokeep))
-}
 
 # Add Program Name  -------------------------------------------------------
 if(addprogramname){
@@ -183,7 +194,7 @@ if(!all(proposals$`member suid` %in% proposals$`pi suid`))
 )
 
 
-# Export Data Together to Package as "nspires"  -----------------------------------------------------------
+# Export Data Together to Export as list, "nspires"  -----------------------------------------------------------
 # to be safe
 if(dplyr::is_grouped_df(proposals)) proposals <- dplyr::ungroup(proposals) 
 if(dplyr::is_grouped_df(people)) people <- dplyr::ungroup(people) 
