@@ -8,14 +8,29 @@
 # Import Data -------------------------------------------------------------
 fn <- list.files(pattern="cesu-partner", full.names=TRUE, recursive=TRUE, ignore.case = TRUE)
 stopifnot(length(fn)==1)
-cesu <- read.csv(fn, strip.white = TRUE, check.names=FALSE) |> dplyr::select(-Notes)
-cesu <- tidyr::pivot_longer(cesu, cols=1:ncol(cesu) ,names_to = "unit", values_to = "member") 
+(sheets=readxl::excel_sheets(fn))
 
-#remove blanks, nas
-cesu <- cesu[cesu$member!="",]
+members = readxl::read_excel(fn, sheet = "members")
+funders = readxl::read_excel(fn, sheet = "funders") 
 
-cesu$unit <- as.factor(cesu$unit)
-cesu$member <- as.factor(cesu$member)
+members <-
+  tidyr::pivot_longer(
+    members,
+    cols = 1:ncol(members) ,
+    names_to = "unit",
+    values_to = "member"
+  ) |> 
+  dplyr::filter(!is.na(member))
+funders <-
+  tidyr::pivot_longer(
+    funders,
+    cols = 1:ncol(funders) ,
+    names_to = "unit",
+    values_to = "funder"
+  ) |> 
+  dplyr::filter(!is.na(funder))
+
+cesu <- list(members=members, funders=funders)
 
 # Export Data to Pkg ------------------------------------------------------
 usethis::use_data(cesu, overwrite=TRUE)
