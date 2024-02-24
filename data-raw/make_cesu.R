@@ -30,7 +30,7 @@ funders <-
   ) |> 
   dplyr::filter(!is.na(funder))
 
-cesu <- list(members=members, funders=funders)
+cesu <- merge(funders, members, all = TRUE)
 
 # Export Data to Pkg ------------------------------------------------------
 usethis::use_data(cesu, overwrite=TRUE)
