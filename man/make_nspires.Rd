@@ -5,26 +5,26 @@
 \title{Make a list of munged NSPIRES data using local data sources.}
 \usage{
 make_nspires(
-  dir = "nspires-data",
-  N = 200,
+  dir,
   tokeep = c("selected", "declined", "submitted", "selectable", "invited", "awarded"),
-  removeppl = TRUE,
+  removeextrappl = TRUE,
   returnclean = TRUE,
-  addprogramname = TRUE
+  addprogramname = TRUE,
+  N = 200
 )
 }
 \arguments{
 \item{dir}{Directory for where the internal data is stored. This can contain subdirectories, as this function attempts to import data as recursive=TRUE.}
 
-\item{N}{Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.}
-
 \item{tokeep}{Character vector. Will keep only the proposals with proposal stus in those listed in the vector. IF NULL, will not remove any proposals.}
 
-\item{removeppl}{Logical. Default TRUE will keep ONLY the people who are associated with proposals in the data frame. FALSE will keep all people.}
+\item{removeextrappl}{Logical. Default TRUE will keep ONLY the people who are associated with proposals in the data frame. FALSE will keep all people.}
 
-\item{returnclean}{Logical. Default TRUE will return the "people" data frame (list element) with reduced infomration. Columns removed include related proposal Titles,}
+\item{returnclean}{Logical. Default TRUE will return the "people" data frame (list element) with reduced information Columns removed include related proposal Titles,}
 
 \item{addprogramname}{Logical. If TRUE, will append the program name (`program name`) from the internal lookup table, `lookup`. Note that some proposals/solicitations will not have a value for `program name` (i.e. NA).}
+
+\item{N}{Parameter used to facilitate data import. Can ignore. A # b/w 100-300 is ideal. Default 200.}
 }
 \description{
 Make a list of munged NSPIRES data using local data sources.

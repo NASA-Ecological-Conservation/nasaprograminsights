@@ -50,7 +50,10 @@ analysis_dropdown <- function() {
 
 
 #' @title Add a Tag for CESU Member or Not
-#' @description This is in helper because it's of limited value. 
+#' @description This is in helper because it's of limited value.
+#' @param dat.nspires data frame containing proposals from make_nspires
+#' @param cesu lookup table inherent to pacakge.
+#' @export
 add.cesu.tag <- function(dat.nspires, cesu=nasaprograminsights::cesu) {
   nasa.cesu <-
     cesu[cesu$funder == "National Aeronautics and Space Administration", ]
