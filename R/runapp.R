@@ -4,6 +4,7 @@
 #' @param removeNonEA logical Default TRUE will remove any data that is not currently defined as a program under Earth Action.
 #' @importFrom bslib bs_theme
 #' @importFrom thematic thematic_shiny
+#' @import shiny 
 #' @param apptheme ANAND PLS FILL this out --saying its to set the bootswatch theme
 #' @usage
 #' nspires = make_nspires("local file directory with NSPIRES proposals")
@@ -28,7 +29,7 @@ runapp <- function(data = NULL, removeNonEA = TRUE, apptheme="lux") {
     shiny::fluidPage(theme = bslib::bs_theme(bootswatch = "lux"),
               # can change theme if you want
               # UI for top menu bar
-              mainPanel(tabsetPanel(setupUI(),
+              shiny::mainPanel(tabsetPanel(setupUI(),
                                     analysisUI())))
   
   server <- function(input, output, session) {
@@ -294,5 +295,5 @@ runapp <- function(data = NULL, removeNonEA = TRUE, apptheme="lux") {
     #dev.off()
   }
   
-  shinyApp(ui = ui, server = server)
+  shiny::shinyApp(ui = ui, server = server)
 }
