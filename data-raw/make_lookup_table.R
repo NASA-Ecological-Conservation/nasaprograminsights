@@ -6,7 +6,9 @@
 #' Data obtained from the ASP mapper and a hand-made table.  
 
 # Import & Munge ASP Mapper Data -------------------------------------------------------------
-## Read in the file(s) from the EA/ASP mapper website (URL tba)
+## Read in the file(s) from the EA/ASP mapper website (download and import data from source: https://cce-dev.gsfc.nasa.gov/mapper/dev/index.html?progid=15)
+### that is, go to https://cce-dev.gsfc.nasa.gov/mapper/dev/index.html?progid=15
+### select "All Rows", then click  (lol) the "Download button" (down arrow) on RHS
 fn <- list.files(pattern="asp-solicitation", full.names=TRUE, recursive=TRUE)
 stopifnot(length(fn)>0)
 names <- readxl::excel_sheets(fn)
