@@ -1,7 +1,6 @@
 #' @name cesu
 #' @description A hand-made lookup table listing CESU partnerships
 #' @docType data
-#' @export
 #' A lookup table containing (as of 2024-02-24) all members of Cooperative Ecosystems Studies Units. 
 #' The original file is wide, here is converted to long.  
 

@@ -7,40 +7,43 @@
 
 # Import & Munge ASP Mapper Data -------------------------------------------------------------
 ## Read in the file(s) from the EA/ASP mapper website (download and import data from source: https://cce-dev.gsfc.nasa.gov/mapper/dev/index.html?progid=15)
-### that is, go to https://cce-dev.gsfc.nasa.gov/mapper/dev/index.html?progid=15
+### that is, go to https://cce-dev.gsfc.nasa.gov/mapper/dev/index.html?progid=15 (i asked developers for a static url to avoid manual download)
 ### select "All Rows", then click  (lol) the "Download button" (down arrow) on RHS
-fn <- list.files(pattern="asp-solicitation", full.names=TRUE, recursive=TRUE)
+# list.files("data-raw")
+(fn <- list.files(pattern="esd_asp_solicitations", full.names=TRUE, recursive=TRUE))
 stopifnot(length(fn)>0)
-names <- readxl::excel_sheets(fn)
-for(i in seq_along(names)){
-  if(i == 1) mapper <- NULL
-  (if(tolower(names[i]) %in% c("readme", "read me")) next())
-  temp <- readxl::read_xlsx(fn, sheet = names[i]) |> 
-    dplyr::mutate(`Program Name` = names[i])
-  mapper <- dplyr::bind_rows(temp, mapper)
-  print(names[i])
-  rm(temp)
-}
-names(mapper) <- tolower(names(mapper))
-mapper <- mapper |>
-  dplyr::rename("solicitation number" = 'nra number') |> 
-  as.data.frame() |> 
-  dplyr::select("solicitation title", "solicitation number", "nra year", "program name")
-rm(fn, names)
+
+## THE IMPORT NEEDS TO BE FIXED:
+### curently (20240617) the original data file has a spurious and unnecessary first row. need to skip based on a function, NOT saying,
+### "import rows 2:N" -- e.g., any row where "Questions?" exists, skip it or read anything after;
+## IE FIX LINE 21-23
+
+mapper <- readxl::read_excel(fn)
+colnames(mapper) <- mapper[1,]
+mapper <- mapper[-1, ] # removing shitty rownames row
+  # dplyr::mutate(`Program` = names[i])
+
+names(mapper) <- tolower(names(mapper)) # i like to force UPPER or force lower for convenience and avoid capitalization errors.
+
+## I guess they deleted NRA number...
+# mapper <- mapper |>
+#   dplyr::rename("solicitation number" = 'nra number') |> 
+#   as.data.frame() |> 
+#   dplyr::select("solicitation title", "solicitation number", "nra year", "program name")
+# rm(fn, names)
 
 # Make a Solicitation Identifier on `mapper`  to Merge with NSPIRES Data -----------------------
-## the NSPIRES exported data does NOT include the NRA number, so make an id to mesh with the solicitaitons lookup -- anoying
+## the NSPIRES exported data does NOT include the NRA number, so make an id to mesh with the solicitations lookup -- anoying
 # we need this because we need this to link from programs to proposals
 # this solution is terrible but whatever for now
-prog <-
-  trimws(sub(".*\\-", "", x = mapper$`solicitation number`)) # extract portion of new var
-yr <-
-  trimws(substr(
-    mapper$`nra year`,
-    nchar(mapper$`nra year`) - 2 + 1,
-    nchar(mapper$`nra year`)
-  )) # extract last two digits of yr
-# Make  a solicitation identifier variable
+### they also removed nra number (i.e. solicitation number) such that we cannot easily index. This data was vital to required for downstream code. Therefore, for now, I applied a workaround below
+# prog <-
+#   trimws(sub(".*\\-", "", x = mapper$`solicitation number`)) # extract portion of new var
+# 43- is the workaround to 40-41
+
+(prog <- sub(".*\\(", "", mapper$`project`) |> stringr::str_replace_all("[^[:alpha:]]", "")) 
+yr <- gsub(pattern = "\\D",replacement =  "",x = mapper$project); yr <- stringr::str_sub(yr, -2)
+
 mapper$'solicitation id' <- paste0(yr, "-", prog, yr)
 rm(yr, prog)
 
@@ -50,33 +53,34 @@ fn <-list.files(pattern = "handmade-solicitation-lookup", full.names=TRUE, recur
 supp <- read.csv(fn, na.strings = c(NA,"", "NA"))
 rm(fn)
 names(supp) <- tolower(gsub("\\.", " ", names(supp)))
-supp <- supp[,c('nra year','solicitation id', 'solicitation id corrected','program name','was solicited','solicitation number')]
+# supp <- supp[,c('nra year','solicitation id', 'solicitation id corrected','program name','was solicited','solicitation number')]
 
-# Correct Special Case Inferred Solicitaiton IDs ----- 
+# Correct Special Case Inferred Solicitation IDs ---------
 ## the supp data frame has the 'solicitation id corrected', so we need to change 
 ## `solicitation id` in `mapper` where theres a correction
-tofix <- supp[which(nchar(supp$`solicitation id corrected`)>0),c("solicitation id", "solicitation id corrected")]
-for(i in 1:nrow(tofix)){ # yes, this is a rachet way but whatever for now i just need a solution
-  old=tofix[i,"solicitation id"]
-  new=supp$`solicitation id corrected`[which(supp$`solicitation id` %in% old)]
-  rowtochg=which(mapper$`solicitation id` %in% old)
-  for(j in seq_along(rowtochg)){
-    mapper$`solicitation id`[rowtochg[j]] <- new
-  }
-  rm(old,new,rowtochg)
-} # end nasty for loop 
+temp <- supp[which(nchar(supp$`solicitation id corrected`)>0),c("solicitation id", "solicitation id corrected")]
+tofix <- temp[which(!temp$`solicitation id`==temp$`solicitation id corrected`),] 
+receiver <- which(supp$`solicitation id` %in% tofix$`solicitation id`)
+supp$`solicitation id`[receiver] <- tofix$`solicitation id corrected`
+rm(receiver, temp, tofix)
 
-# Move anything over to the 'corrected column for join below:
-tochg=which(is.na(supp$`solicitation id corrected`))
-supp$`solicitation id corrected`[tochg] <- supp$`solicitation id`[tochg]
-
-# Combine the Two DFs into a single Data Frame  ---------------------------------------------------------
+# Combine the Handmade lookup (supp) + ASP mapper (mapper) data frames---------------------------------------------------------
+# View(merge(mapper, supp))
+names(mapper)[which(names(mapper) %in% names(supp))]
+names(supp)[which(names(supp) %in% names(mapper))]
+merge(mapper |> dplyr::select(data), supp)
 lookup <-
-  dplyr::full_join(mapper, supp, 
-                   by = c("solicitation id"="solicitation id corrected"), 
+  dplyr::full_join(x = mapper, by = supp, join_by = c("solicitation id", "nra year"))
+  dplyr::full_join(mapper, supp,
+                   # by = c("solicitation id"="solicitation id corrected"), 
                    keep=FALSE,
-                   na_matches="na") |> 
-  dplyr::mutate("solicitation number" = dplyr::coalesce(`solicitation number.x`, `solicitation number.y`)) |> 
+                   na_matches="na")
+
+setdiff(mapper$`solicitation id` ,supp$`solicitation id corrected`) |> sort()
+setdiff(supp$`solicitation id corrected`, mapper$`solicitation id` ) |> sort()
+
+
+dplyr::mutate("solicitation number" = dplyr::coalesce(`solicitation number.x`, `solicitation number.y`)) |> 
   dplyr::mutate("program name" = dplyr::coalesce(`program name.x`, `program name.y`)) |> 
   dplyr::mutate("nra year" = dplyr::coalesce(`nra year.x`, `nra year.y`)) |> 
   dplyr::select(-c(`solicitation id.y`,
