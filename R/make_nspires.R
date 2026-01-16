@@ -15,7 +15,7 @@ make_nspires <- function(dir, # where is the internal data stored. This should b
                          N=200
                          ){
   
-stopifnot(all(tolower(tokeep) %in% c("selected", "declined", "submitted","selectable","invited","awarded")))
+# stopifnot(all(tolower(tokeep) %in% c("selected", "declined", "submitted","selectable","invited","awarded")))
 
   # FOR DEV only
 # N=200;tokeep=c("selected", "declined", "submitted","selectable","invited","awarded");removeppl=TRUE;returnclean=TRUE; dealwithspecialcases = TRUE;  addprogramname=TRUE

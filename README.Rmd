@@ -39,7 +39,7 @@ nspires <-
       "rejected"
     )
   )
-# nspires contains 3 elements (data.frames):
+# nspires contains 3 data.frames:
 ##    lookup table to link program names and NOFOs
 ##    people: people listed on proposals
 ##    proposals: information regarding individual proposals
